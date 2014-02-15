@@ -8,7 +8,7 @@ import random
 from objects.AccessPoint import AccessPoint
 
 MIN_RSSI = -99
-MAX_RSSI = -60
+MAX_RSSI = -50
 
 DAY_INTERVAL_SECS = 24*60*60
 
@@ -228,3 +228,10 @@ def get_best_signal(n_best_signal, fingerprint_dict):
         else:
             fingerprint_dict[key] = sorted_list
     return fingerprint_dict
+
+def get_ordered_time_list(fingerprints):
+    time_list = []
+    for key in fingerprints.keys():
+        time_list.append(key)
+    time_list = sorted(time_list, key=lambda x: x)
+    return time_list
