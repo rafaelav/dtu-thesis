@@ -12,7 +12,7 @@ MAX_RSSI = -60
 
 DAY_INTERVAL_SECS = 24*60*60
 
-def retrieve_data_from_user(user_file_name, day_no):
+def retrieve_data_from_user(user_file_name, start_day, days_to_consider):
 #    fingerprint_list = []
     user_data = []
     with io.open('../{0}'.format(user_file_name), encoding='utf-8') as f:
@@ -28,14 +28,14 @@ def retrieve_data_from_user(user_file_name, day_no):
             
             # finding first moment of wanted day
             if first_registered_time_of_day == 0:
-                if split_line[1] - first_registered_timestamp >= day_no*DAY_INTERVAL_SECS:
+                if split_line[1] - first_registered_timestamp >= start_day*DAY_INTERVAL_SECS:
                     first_registered_time_of_day = split_line[1]
                     print("First day start time/ Needed day start time: ",first_registered_timestamp, first_registered_time_of_day)
                 else:
                     continue
             
             # eliminating the data from Android/iPhone hotspots & buses/trains 
-            if split_line[5] not in [1, 6, 7, 8] and split_line[1]-first_registered_time_of_day < DAY_INTERVAL_SECS:
+            if split_line[5] not in [1, 6, 7, 8] and split_line[1]-first_registered_time_of_day < days_to_consider * DAY_INTERVAL_SECS:
                 user_data.append(split_line)
         return user_data
     
@@ -101,8 +101,38 @@ def remove_noise(data):
             final_data.append(line)
     
     return final_data
+
+def get_most_common_bssids(data, n_most_common):
+    most_common = dict()
+    
+    for line in data:
+        bssid = line[3]
+        if bssid in most_common.keys():
+            most_common[bssid] = most_common[bssid] + 1
+        else:
+            most_common[bssid] = 1
+     
+    ordered_list = sorted(most_common.items(), key=lambda x: x[1], reverse=True)
+        
+    if n_most_common == -1:
+        bssids = [] # just bssids
+        for x in ordered_list:
+            bssids.append(x[0])
+        return ordered_list, bssids
+    else:
+        bssids = [] # just bssids
+        for x in ordered_list:
+            if len(bssids) < n_most_common:
+                bssids.append(x[0])
+            else:
+                break
+        return ordered_list[0:n_most_common], bssids
+     
+    
             
-def get_fingerprints(data, timestamps, n_best_signal):
+def get_fingerprints(data, timestamps, n_best_signal, bssids_needed = None):
+    """ Returns a dictionari key=timetsamp, value={(bssid, rssi)...} - value contains only first n_best signal APs
+    If bssids_needed list is given, then only those bssids will be added to the fingerprints"""
     data = remove_noise(data)
     
     fingerprint_dict = dict()
@@ -115,15 +145,26 @@ def get_fingerprints(data, timestamps, n_best_signal):
         timestamp = line[1]
         bssid = line[3]
         rssi = line[4]
-        # ap = AccessPoint(bssid,rssi)
         
-        """#TODO - To add access point instead"""
-        fingerprint_dict[timestamp].append((bssid, rssi))
-    
+        if bssids_needed is not None:
+            if bssid in bssids_needed:
+                fingerprint_dict[timestamp].append((bssid, rssi))
+        else:
+            fingerprint_dict[timestamp].append((bssid, rssi))
+
+    if bssids_needed is not None:
+        fingerprint_dict = remove_empty_keys(fingerprint_dict)
+        #print("After removing empty keys: ",fingerprint_dict)
+        
     selected_dict = get_best_signal(n_best_signal, fingerprint_dict)
     
     return selected_dict
 
+def remove_empty_keys(my_dict):
+    for key in my_dict.keys():
+        if len(my_dict[key]) == 0:
+            my_dict.pop(key, None)
+    return my_dict
 """def get_bssids_info_in_time(data, bssids):
     #Returns: a dict which has as keys the identities of APs and values times and strengths of signals at those times
     data = remove_noise(data)
@@ -179,8 +220,9 @@ def get_best_signal(n_best_signal, fingerprint_dict):
     if n_best_signal == -1:
         return fingerprint_dict
     for key in fingerprint_dict.iterkeys():
-        ap_list = fingerprint_dict[key]
-        sorted_list = sorted(ap_list, key=lambda x: x[1])
+        ap_list = fingerprint_dict[key] # list of (bssid, rssi) for each timestamp
+        sorted_list = sorted(ap_list, key=lambda x: x[1]) # above sorted after rssi values
+        # keeping only first n_best_signal from the sorted list
         if len(sorted_list) >= n_best_signal:
             fingerprint_dict[key] = sorted_list[(0-n_best_signal):]
         else:
