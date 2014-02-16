@@ -3,13 +3,11 @@ Created on Feb 14, 2014
 
 @author: rafa
 '''
-from os import walk
-import numpy as np
 
 import sys
 from __builtin__ import len
 sys.path.append( ".." )
-from handlers import data
+from handlers import user_data_handler
 
 import matplotlib.pyplot as plt
 import datetime
@@ -26,26 +24,7 @@ def get_info_on_time(x_sorted_list):
         date_val = datetime.datetime.fromtimestamp(int(tval))
         text_list.append(week[date_val.weekday()]+"\n"+str(date_val.hour)+":"+str(date_val.minute))
     
-    return text_list 
-
-def select_needed(time_list, text_list, pos):
-    len_lists = len(time_list)
-    crt = 0
-    
-    if (len_lists%pos)%2 !=0:
-        step = len_lists/pos + 1
-    else:
-        step = len_lists/pos
-        
-    time_l = []
-    text_l = []
-    
-    while crt < len_lists:
-        time_l.append(time_list[crt])
-        text_l.append(text_list[crt])
-        crt = crt + step
-    return time_l, text_l
-    
+    return text_list     
 
 def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_consider):#, time_list):
     """color_to_use - dict with bssid:color, data_to_plot - dict with bssd: ([list_of_time_when_appears],[list_of_strength_at_time])"""
@@ -121,25 +100,25 @@ def prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider,
     
 def prepare_data_and_start_plot(user_file, start_day, days_to_consider, n_best_signal_bssids, m_most_popular_bssids):
     # get data from file
-    user_data = data.retrieve_data_from_user(user_file,start_day,days_to_consider)
+    user_data = user_data_handler.retrieve_data_from_user(user_file,start_day,days_to_consider)
     
     # get unique timestamps from data
-    timestamps = data.get_unique_timestamps(user_data)
+    timestamps = user_data_handler.get_unique_timestamps(user_data)
     
     # find out which are the bssids which appear most common ( first m_most_popular_bssids)
-    most_common_bssids  = data.get_most_common_bssids(user_data, m_most_popular_bssids)
+    most_common_bssids  = user_data_handler.get_most_common_bssids(user_data, m_most_popular_bssids)
     
     # git fingerprints which contain only most popular bssids and get only first n_best_signal_bssids for each
-    fingerprints = data.get_fingerprints(user_data, timestamps, n_best_signal_bssids, most_common_bssids)
+    fingerprints = user_data_handler.get_fingerprints(user_data, timestamps, n_best_signal_bssids, most_common_bssids)
     
     # find out bssid which appear in timestamps
-    bssids = data.get_unique_bssid(fingerprints)
+    bssids = user_data_handler.get_unique_bssid_from_fingerprints(fingerprints)
     
     # find out at which times do each bssid appears
-    bssid_occurences = data.get_bssids_info_in_time(fingerprints, bssids)
+    bssid_occurences = user_data_handler.get_bssids_info_in_time(fingerprints, bssids)
     
     # get colors for each bssid
-    color_codes = data.generate_color_codes_for_bssid(bssids)
+    color_codes = user_data_handler.generate_color_codes_for_bssid(bssids)
     
     #time_list = data.get_ordered_time_list(fingerprints)
     # plot
