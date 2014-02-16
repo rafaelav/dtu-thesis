@@ -118,7 +118,7 @@ def get_most_common_bssids(data, n_most_common):
         bssids = [] # just bssids
         for x in ordered_list:
             bssids.append(x[0])
-        return ordered_list, bssids
+        return bssids#,ordered_list
     else:
         bssids = [] # just bssids
         for x in ordered_list:
@@ -126,7 +126,7 @@ def get_most_common_bssids(data, n_most_common):
                 bssids.append(x[0])
             else:
                 break
-        return ordered_list[0:n_most_common], bssids
+        return bssids#,ordered_list[0:n_most_common]
      
     
             
