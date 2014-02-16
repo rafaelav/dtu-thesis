@@ -33,8 +33,11 @@ def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_cons
     #"""(NOT USED CURRENTLY) time_list - list with unique time moments found in fingerprints over the days_to_consider starting on start_day interval"""
 
     """ initial settings for plotting"""
-    plt.gcf().set_size_inches(10,2)    
+    # erasing anything from before
     fig = plt.figure(1)
+    fig.clear()
+    fig.set_size_inches(10,2)    
+    
     ax = fig.add_subplot(111)
         
     """ data editing and plotting for each bssid over the given time"""
@@ -84,8 +87,9 @@ def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_cons
     lgd = ax.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5,-0.2), ncol=5)
     # end legend
     
-    fig.savefig(username+"_plot.png", bbox_extra_artists=(lgd,), bbox_inches='tight')
-    plt.show()
+    fig.savefig("../../plots/"+username+"_"+str(days_to_consider)+"days_plot.png", bbox_extra_artists=(lgd,), bbox_inches='tight')
+    print("Finished for "+username)
+    #plt.show()
 
 def prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, colors):#, time_list):
     username = user_file    
@@ -148,5 +152,7 @@ def prepare_data_and_start_plot(user_file, start_day, days_to_consider, n_best_s
     # plot
     print("Data for user "+user_file+" retrieved. Moving on to preparing the data for plotting...")
     prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, color_codes)#, time_list)
-    
-prepare_data_and_start_plot("user_1",0,5,-1,10)
+
+for i in range(1,10):
+    prepare_data_and_start_plot("user_"+str(i)+"_sorted",0,1,-1,10)
+#prepare_data_and_start_plot("user_3_sorted",5,1,-1,10)

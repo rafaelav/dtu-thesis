@@ -15,9 +15,10 @@ def retrieve_data_from_user(user_file_name, start_day, days_to_consider):
     """Returns list with list elements where the elements contain: user id, timestamp, ssid bssid rssi context"""
     """ user_file_name - the user data file, start_day - which should be the first day to retrieve data from (calculated as 24h * number from first moment recorded), days_to_consider - for how many cycles of 24 hours from first day to retrieve data"""
     user_data = []
-    with io.open('../{0}'.format(user_file_name), encoding='utf-8') as f:
+    with io.open('../../wifi_data/{0}'.format(user_file_name), encoding='utf-8') as f:
         first_registered_time_of_day = 0 
         first_registered_timestamp = 0
+        
         for line in f:
             split_line = line.split()
             if split_line:
@@ -37,7 +38,7 @@ def retrieve_data_from_user(user_file_name, start_day, days_to_consider):
             # eliminating the noise and keeping only needed days
             if not_noise(split_line) and split_line[1] - first_registered_time_of_day < days_to_consider * DAY_INTERVAL_SECS:
                 user_data.append(split_line)
-            
+        
         return user_data
     
 def get_unique_timestamps(data):
