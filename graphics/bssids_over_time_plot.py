@@ -14,6 +14,7 @@ import datetime
 
 NO_SECS_PER_HOUR = 60*60
 HOURS_BETWEEN_TICKS = 2
+TIME_BEFORE_INTERRUPT = 60*30 # 30 mins
 
 week   = {0:'Sunday', 1:'Monday', 2:'Tuesday', 3:'Wednesday', 4:'Thursday',  5:'Friday', 6:'Saturday'}
 
@@ -38,27 +39,33 @@ def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_cons
         
     """ data editing and plotting for each bssid over the given time"""
     for key in data_to_plot.iterkeys():
-        x_time_list = data_to_plot[key][0]
-        y_rssi_list = data_to_plot[key][1]
-        
-        if len(x_time_list)!=len(y_rssi_list):
-            print("ERROR!")
-            return -1
-        
-        time_rssi_list = []
-        for idx, val in enumerate(x_time_list):
-            time_rssi_list.append((val,y_rssi_list[idx]))
-        
-        # need to sort them
-        time_rssi_list = sorted(time_rssi_list, key=lambda x: x[0])
-        
-        x_sorted_list = []
-        y_sorted_list = []
-        for elem in time_rssi_list:
-            x_sorted_list.append(elem[0])
-            y_sorted_list.append(elem[1])
-                
-        ax.plot(x_sorted_list, y_sorted_list, '-', color=color_to_use[key], label=key)
+        first = True
+        for list_elements in data_to_plot[key]:
+            x_time_list = list_elements[0]
+            y_rssi_list = list_elements[1]
+            
+            if len(x_time_list)!=len(y_rssi_list):
+                print("ERROR!")
+                return -1
+            
+            """time_rssi_list = []
+            for idx, val in enumerate(x_time_list):
+                time_rssi_list.append((val,y_rssi_list[idx]))
+            
+            # need to sort them
+            time_rssi_list = sorted(time_rssi_list, key=lambda x: x[0])
+            
+            x_sorted_list = []
+            y_sorted_list = []
+            for elem in time_rssi_list:
+                x_sorted_list.append(elem[0])
+                y_sorted_list.append(elem[1])"""
+            # the first time is the only time when we put a label
+            if first == False:
+                ax.plot(x_time_list, y_rssi_list, '-', color=color_to_use[key])
+            elif first == True:
+                ax.plot(x_time_list, y_rssi_list, '-', color=color_to_use[key], label=key)
+                first = False
 
     # change labels
     locs, labels = plt.xticks()
@@ -84,16 +91,33 @@ def prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider,
     username = user_file    
     data_to_plot = dict()
     
-    for key in bssid_occurences.iterkeys():
+    for mkey in bssid_occurences.iterkeys():
         time_ticks_list = []
         strength_list = []
         
-        for x in bssid_occurences[key]:
-            time_ticks_list.append(x[0])
-            strength_list.append(x[1])
-    
+        data_to_plot[mkey] = []
+        
+        # sort ocurrences for current bssid based on time
+        bssid_occurences[mkey] = sorted(bssid_occurences[mkey], key=lambda x: x[0])
+        
+        for x in bssid_occurences[mkey]:
+            # if first in section or stil part of the same section
+            if len(time_ticks_list) == 0 or x[0] - time_ticks_list[len(time_ticks_list)-1] < TIME_BEFORE_INTERRUPT:
+                time_ticks_list.append(x[0])
+                strength_list.append(x[1])
+            else:
+                # save the section until here
+                data_to_plot[mkey].append((time_ticks_list, strength_list))
+                # reset lists
+                time_ticks_list = []
+                strength_list = []
+                # add current
+                time_ticks_list.append(x[0])
+                strength_list.append(x[1])
+                
+        # add last section
         # each bssid will have 2 list (time list and list with strength for bssid at that time)
-        data_to_plot[key] = (time_ticks_list, strength_list)
+        data_to_plot[mkey].append((time_ticks_list, strength_list))
     
     print("Data for user "+user_file+" prepared for plotting. Moving on to actually plotting...")            
     plot_for_bssid(colors, data_to_plot, username, start_day, days_to_consider)#, time_list)
@@ -125,4 +149,4 @@ def prepare_data_and_start_plot(user_file, start_day, days_to_consider, n_best_s
     print("Data for user "+user_file+" retrieved. Moving on to preparing the data for plotting...")
     prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, color_codes)#, time_list)
     
-prepare_data_and_start_plot("user_1",0,1,-1,10)
+prepare_data_and_start_plot("user_1",0,5,-1,10)
