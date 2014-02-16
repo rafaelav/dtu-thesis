@@ -101,7 +101,7 @@ def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_cons
     fig.savefig(username+"_plot.png", bbox_extra_artists=(lgd,), bbox_inches='tight')
     plt.show()
 
-def plot_bssid_over_time(user_file, start_day, days_to_consider, bssid_occurences, colors):#, time_list):
+def prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, colors):#, time_list):
     username = user_file    
     data_to_plot = dict()
     
@@ -115,7 +115,8 @@ def plot_bssid_over_time(user_file, start_day, days_to_consider, bssid_occurence
     
         # each bssid will have 2 list (time list and list with strength for bssid at that time)
         data_to_plot[key] = (time_ticks_list, strength_list)
-                
+    
+    print("Data for user "+user_file+" prepared for plotting. Moving on to actually plotting...")            
     plot_for_bssid(colors, data_to_plot, username, start_day, days_to_consider)#, time_list)
     
 def prepare_data_and_start_plot(user_file, start_day, days_to_consider, n_best_signal_bssids, m_most_popular_bssids):
@@ -142,7 +143,7 @@ def prepare_data_and_start_plot(user_file, start_day, days_to_consider, n_best_s
     
     #time_list = data.get_ordered_time_list(fingerprints)
     # plot
-    print("Data for user "+user_file+" retrived. Moving on to plotting...")
-    plot_bssid_over_time(user_file, start_day, days_to_consider, bssid_occurences, color_codes)#, time_list)
+    print("Data for user "+user_file+" retrieved. Moving on to preparing the data for plotting...")
+    prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, color_codes)#, time_list)
     
 prepare_data_and_start_plot("user_1",0,1,-1,10)
