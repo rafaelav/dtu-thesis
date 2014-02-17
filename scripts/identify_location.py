@@ -40,16 +40,18 @@ def get_different_locations(user_file,start_day,days_to_consider,n_best_signal_b
         location.append(fingerprint_list[i])
         location_times.append(fingerprint_list[i][0])
         j = i + 1
-        while j < len(fingerprint_list) and polaris.get_fingerprint_similarity(fingerprint_list[i][1], fingerprint_list[j][1]) > 0.95:
-            #print(fingerprint_list[j-1][1],"\n",fingerprint_list[j][1])
+        while j < len(fingerprint_list) and polaris.get_fingerprint_similarity(fingerprint_list[i][1], fingerprint_list[j][1]) > 0.01:
+            print(fingerprint_list[i])
+            print(fingerprint_list[j])
+            print("Similarity = "+str(polaris.get_fingerprint_similarity(fingerprint_list[i][1], fingerprint_list[j][1])))        #print(fingerprint_list[j-1][1],"\n",fingerprint_list[j][1])
             location.append(fingerprint_list[j])
             location_times.append(fingerprint_list[j][0])
             j = j + 1
         i = j # moving to next location which seems to start at j
         if len(location_times) > 5:
             l_count = l_count + 1
-            print("Loc: "+str(l_count)+"\n",location_times)
+            print("Loc: "+str(l_count))#+"\n",location_times)
     
     return l_count
 
-get_different_locations("user_1_sorted",0,1,-1,10)
+get_different_locations("user_1_sorted",0,1,-1,20)

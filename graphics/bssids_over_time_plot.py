@@ -15,7 +15,7 @@ NO_SECS_PER_HOUR = 60*60
 HOURS_BETWEEN_TICKS = 2
 TIME_BEFORE_INTERRUPT = 60*30 # 30 mins
 
-week   = {0:'Monday', 1:'Tuesday', 2:'Wednesday', 3:'Thursday',  4:'Friday', 5:'Saturday', 6:'Sunday'}
+week   = {0:'Mon', 1:'Tue', 2:'Wed', 3:'Thu',  4:'Fri', 5:'Sat', 6:'Sun'}
 
 def get_info_on_time(given_list):
     text_list = []
@@ -44,6 +44,7 @@ def get_real_times_for_ticklocs(data_to_plot, count):
     else:
         step = len(timestamps)/count + 1
     
+    #print("First/last timestamps: "+str(timestamps[0])+" "+str(timestamps[len(timestamps)-1]))
     timestamps_to_return = []
     
     crt = 0
@@ -53,9 +54,10 @@ def get_real_times_for_ticklocs(data_to_plot, count):
         crt = crt + step
         added = added + 1
     
+    #print(timestamps_to_return)
     return timestamps_to_return
 
-def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_consider):#, time_list):
+def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_consider, most_common_bssids_legend):#, time_list):
     """color_to_use - dict with bssid:color, data_to_plot - dict with bssd: ([list_of_time_when_appears],[list_of_strength_at_time])"""
     """username - user for which plotting is done (filename), start_day - day for which plotting starts, days_to_consider - time interval for plot"""
     #"""(NOT USED CURRENTLY) time_list - list with unique time moments found in fingerprints over the days_to_consider starting on start_day interval"""
@@ -64,7 +66,7 @@ def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_cons
     # erasing anything from before
     fig = plt.figure(1)
     fig.clear()
-    fig.set_size_inches(10,2)    
+    fig.set_size_inches(15,3)    
     
     ax = fig.add_subplot(111)
         
@@ -82,8 +84,11 @@ def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_cons
             # the first time is the only time when we put a label
             if first == False:
                 ax.plot(x_time_list, y_rssi_list, '-', color=color_to_use[key])
-            elif first == True:
+            elif first == True and key in most_common_bssids_legend:
                 ax.plot(x_time_list, y_rssi_list, '-', color=color_to_use[key], label=key)
+                first = False
+            elif first == True and key not in most_common_bssids_legend:
+                ax.plot(x_time_list, y_rssi_list, '-', color=color_to_use[key])
                 first = False
 
     # change labels
@@ -109,7 +114,7 @@ def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_cons
     print("Finished for "+username)
     #plt.show()
 
-def prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, colors):#, time_list):
+def prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, colors, most_common_bssids_legend):#, time_list):
     username = user_file    
     data_to_plot = dict()
     
@@ -142,9 +147,9 @@ def prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider,
         data_to_plot[mkey].append((time_ticks_list, strength_list))
     
     print("Data for user "+user_file+" prepared for plotting. Moving on to actually plotting...")            
-    plot_for_bssid(colors, data_to_plot, username, start_day, days_to_consider)#, time_list)
+    plot_for_bssid(colors, data_to_plot, username, start_day, days_to_consider, most_common_bssids_legend)#, time_list)
     
-def prepare_data_and_start_plot(user_file, start_day, days_to_consider, n_best_signal_bssids, m_most_popular_bssids):
+def prepare_data_and_start_plot(user_file, start_day, days_to_consider, n_best_signal_bssids, m_most_popular_bssids, max_in_legend):
     # get data from file
     user_data = user_data_handler.retrieve_data_from_user(user_file,start_day,days_to_consider)
     
@@ -154,6 +159,11 @@ def prepare_data_and_start_plot(user_file, start_day, days_to_consider, n_best_s
     # find out which are the bssids which appear most common ( first m_most_popular_bssids)
     most_common_bssids  = user_data_handler.get_most_common_bssids(user_data, m_most_popular_bssids)
     
+    # find out most popular max_in_legend bssids (the ones who will be put in the plot legend)
+    if m_most_popular_bssids > max_in_legend or m_most_popular_bssids == -1:
+        most_common_bssids_legend  = user_data_handler.get_most_common_bssids(user_data, max_in_legend)
+    else:
+        most_common_bssids_legend = most_common_bssids
     # git fingerprints which contain only most popular bssids and get only first n_best_signal_bssids for each
     fingerprints = user_data_handler.get_fingerprints(user_data, timestamps, n_best_signal_bssids, most_common_bssids)
     
@@ -169,8 +179,8 @@ def prepare_data_and_start_plot(user_file, start_day, days_to_consider, n_best_s
     #time_list = data.get_ordered_time_list(fingerprints)
     # plot
     print("Data for user "+user_file+" retrieved. Moving on to preparing the data for plotting...")
-    prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, color_codes)#, time_list)
+    prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, color_codes, most_common_bssids_legend)#, time_list)
 
-for i in range(1,11):
-    prepare_data_and_start_plot("user_"+str(i)+"_sorted",0,1,-1,10)
+for i in range(1,2):
+    prepare_data_and_start_plot("user_"+str(i)+"_sorted",0,1,-1,-1,10)
 #prepare_data_and_start_plot("user_1_sorted",0,1,-1,10)
