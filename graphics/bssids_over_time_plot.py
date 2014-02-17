@@ -5,7 +5,6 @@ Created on Feb 14, 2014
 '''
 
 import sys
-from __builtin__ import len
 sys.path.append( ".." )
 from handlers import user_data_handler
 
@@ -16,16 +15,45 @@ NO_SECS_PER_HOUR = 60*60
 HOURS_BETWEEN_TICKS = 2
 TIME_BEFORE_INTERRUPT = 60*30 # 30 mins
 
-week   = {0:'Sunday', 1:'Monday', 2:'Tuesday', 3:'Wednesday', 4:'Thursday',  5:'Friday', 6:'Saturday'}
+week   = {0:'Monday', 1:'Tuesday', 2:'Wednesday', 3:'Thursday',  4:'Friday', 5:'Saturday', 6:'Sunday'}
 
-def get_info_on_time(x_sorted_list):
+def get_info_on_time(given_list):
     text_list = []
     
-    for tval in x_sorted_list:
-        date_val = datetime.datetime.fromtimestamp(int(tval))
+    for tval in given_list:
+        date_val = datetime.datetime.utcfromtimestamp(int(tval))
         text_list.append(week[date_val.weekday()]+"\n"+str(date_val.hour)+":"+str(date_val.minute))
     
-    return text_list     
+    return text_list 
+
+def get_real_times_for_ticklocs(data_to_plot, count):
+    """ Returns count timestamps to be ploted on the x axis"""
+    timestamps = []
+    for key in data_to_plot.iterkeys():
+        for tuple_of_lists in data_to_plot[key]: 
+            time_list = tuple_of_lists[0]
+
+            for x in time_list:
+                if x not in timestamps:
+                    timestamps.append(x)
+    
+    timestamps = sorted(timestamps, key=lambda x: x)
+    
+    if (len(timestamps)%count)%2 == 0:
+        step = len(timestamps)/count
+    else:
+        step = len(timestamps)/count + 1
+    
+    timestamps_to_return = []
+    
+    crt = 0
+    added = 0
+    while added < count:
+        timestamps_to_return.append(timestamps[crt])
+        crt = crt + step
+        added = added + 1
+    
+    return timestamps_to_return
 
 def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_consider):#, time_list):
     """color_to_use - dict with bssid:color, data_to_plot - dict with bssd: ([list_of_time_when_appears],[list_of_strength_at_time])"""
@@ -51,18 +79,6 @@ def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_cons
                 print("ERROR!")
                 return -1
             
-            """time_rssi_list = []
-            for idx, val in enumerate(x_time_list):
-                time_rssi_list.append((val,y_rssi_list[idx]))
-            
-            # need to sort them
-            time_rssi_list = sorted(time_rssi_list, key=lambda x: x[0])
-            
-            x_sorted_list = []
-            y_sorted_list = []
-            for elem in time_rssi_list:
-                x_sorted_list.append(elem[0])
-                y_sorted_list.append(elem[1])"""
             # the first time is the only time when we put a label
             if first == False:
                 ax.plot(x_time_list, y_rssi_list, '-', color=color_to_use[key])
@@ -73,7 +89,9 @@ def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_cons
     # change labels
     locs, labels = plt.xticks()
     ticks_list = ax.xaxis.get_majorticklocs()
-    labels = get_info_on_time(ticks_list) # new labels
+    count_ticks = len(ticks_list)
+    real_moments_ticks = get_real_times_for_ticklocs(data_to_plot, count_ticks)
+    labels = get_info_on_time(real_moments_ticks) # new labels
     plt.xticks(locs, labels)
     
     # Text over plot (title, axes)
@@ -153,6 +171,6 @@ def prepare_data_and_start_plot(user_file, start_day, days_to_consider, n_best_s
     print("Data for user "+user_file+" retrieved. Moving on to preparing the data for plotting...")
     prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, color_codes)#, time_list)
 
-for i in range(1,10):
+for i in range(1,11):
     prepare_data_and_start_plot("user_"+str(i)+"_sorted",0,1,-1,10)
-#prepare_data_and_start_plot("user_3_sorted",5,1,-1,10)
+#prepare_data_and_start_plot("user_1_sorted",0,1,-1,10)

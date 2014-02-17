@@ -24,19 +24,14 @@ def testing_get_unique_bssids():
     timestamps = user_data_handler.get_unique_timestamps(user_data)
     fingerprints = user_data_handler.get_fingerprints(user_data, timestamps,1)
     print(fingerprints)
-    bssids = user_data_handler.get_unique_bssid(fingerprints)
+    bssids = user_data_handler.get_unique_bssid_from_fingerprints(fingerprints)
     print(bssids)
     
 def testing_generate_color_codes_for_bssid():
     user_data = user_data_handler.retrieve_data_from_user("user_1",0,1)
-    bssids = user_data_handler.get_unique_bssid(user_data)
+    bssids = user_data_handler.get_unique_bssid_from_data(user_data)
     color_codes = user_data_handler.generate_color_codes_for_bssid(bssids)
     print(color_codes)
-    
-def testing_remove_noise():
-    user_data = user_data_handler.retrieve_data_from_user("user_1",0,1)
-    no_noise_data = user_data_handler.remove_noise(user_data)
-    print(no_noise_data)
     
 def testing_get_fingerprints():
     user_data = user_data_handler.retrieve_data_from_user("user_1",0,1)
@@ -71,7 +66,7 @@ def testing_get_most_used():
     timestamps = user_data_handler.get_unique_timestamps(user_data)
     fingerprints = user_data_handler.get_fingerprints(user_data, timestamps,1)      
     print(fingerprints)     
-    bssids = user_data_handler.get_unique_bssid(fingerprints)
+    bssids = user_data_handler.get_unique_bssid_from_fingerprints(fingerprints)
     print(bssids)
     bssid_occurences = user_data_handler.get_bssids_info_in_time(fingerprints, bssids)
     print(bssid_occurences)
@@ -105,7 +100,6 @@ def testing_get_ordered_time_list():
 #testing_get_unique_timestamps()
 #testing_get_unique_bssids()
 #testing_generate_color_codes_for_bssid()
-#testing_remove_noise()
 #testing_get_fingerprints()
 #testing_calculating_level()
 #testing_get_signal_similarity()

@@ -36,8 +36,12 @@ def retrieve_data_from_user(user_file_name, start_day, days_to_consider):
                     continue
             
             # eliminating the noise and keeping only needed days
-            if not_noise(split_line) and split_line[1] - first_registered_time_of_day < days_to_consider * DAY_INTERVAL_SECS:
-                user_data.append(split_line)
+            if days_to_consider != -1:
+                if not_noise(split_line) and split_line[1] - first_registered_time_of_day < days_to_consider * DAY_INTERVAL_SECS:
+                    user_data.append(split_line)
+            else:   # all days
+                if not_noise(split_line):
+                    user_data.append(split_line)
         
         return user_data
     
