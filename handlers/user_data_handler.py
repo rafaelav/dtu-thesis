@@ -10,6 +10,7 @@ MIN_RSSI = -99
 MAX_RSSI = -60
 
 DAY_INTERVAL_SECS = 24 * 60 * 60
+SEC_IN_MINUTE = 60
 
 def retrieve_data_from_user(user_file_name, start_day, days_to_consider):
     """Returns list with list elements where the elements contain: user id, timestamp, ssid bssid rssi context"""
@@ -202,6 +203,35 @@ def get_bssids_info_in_time(fingerprints_dict, bssids):
 
     return bssids_dict
 
+def get_bssid_info_from_data(data, only_for_bssid_list=None):
+    """Returns a dictionary with bssids as keys and as value for each key a list of tuples (time, rssi) representing each moment at which the bssid has been registered together with the signal strength for that moment. If only_for_bssid_list is present, only these bssids will be keys in the resulting dictionary."""
+    if only_for_bssid_list is not None:
+        bssid_list = only_for_bssid_list
+    else:
+        bssid_list = get_unique_bssid_from_data(data)
+        
+    bssid_dict = dict()
+    
+    # initiate dictionary
+    for bssid in bssid_list:
+        bssid_dict[bssid] = []
+        
+    for line in data:
+        bssid = line[3]
+        
+        if only_for_bssid_list is not None:
+            if bssid in only_for_bssid_list:
+                timestamp = line [1]
+                rssi = line[4]
+                bssid_dict[bssid].append((timestamp,rssi))
+        else:
+            timestamp = line [1]
+            rssi = line[4]
+            bssid_dict[bssid].append((timestamp,rssi))
+            
+    
+    return bssid_dict
+        
 def get_most_popular(n_most_popular, given_dict):
     """ given_dict: {x:[(a1,b1),(a2,b2),(a3,b3)...]; y:[(c1,d1),(c2,d2),(c3,d3),..];...}"""
     """ Returns a dictionary with the first n_most_popular (key,value) elements from the given dictionary. A (key, value) element's popularity is measured by how many tuples (a,b) there are in the value list associated to the key"""
@@ -237,17 +267,44 @@ def get_ordered_time_list(fingerprints):
     time_list = sorted(time_list, key=lambda x: x)
     return time_list
 
-"""def remove_noise(data):
-    #(Obsolete) Returns data list from which the noise has been eliminated
-    final_data = []
-    for line in data:
-        rssi = line[4]
-        context = line[5]
+def get_bssid_sample_frequency_over_time_bin(bssid_dict, time_bin):
+    """Returns a dictionary with the bssid as key and a list of (start_time,end_time,samples) elements representing the number of apperances (samples) of the bssid from start to end time. Start and end should not be more than time_bin minutes apart"""   
+    samples_dict = dict()
+    for bssid in bssid_dict.keys():
+        print(bssid)
+        samples_dict[bssid] = []
         
-        # if signal not from Android/iPhone hitspot, buses, trains APs
-        if context not in [1, 6, 7, 8]:
-            # if signal is not considered below or above given noise limits 
-            if rssi >= MIN_RSSI and rssi <= MAX_RSSI:
-                final_data.append(line)
-    
-    return final_data"""
+        start_time = 0
+        count = 0
+        stop_time = 0
+        
+        for time_rssi_elem in bssid_dict[bssid]:
+            print(time_rssi_elem)
+            if start_time == 0:
+                start_time = time_rssi_elem[0]
+                count = 1
+                stop_time = start_time
+                #print("Start ",start_time, count, stop_time)
+            else:
+                #print("limit: ",time_bin * SEC_IN_MINUTE,"Next: ",time_rssi_elem[0])
+                if time_rssi_elem[0] - start_time < time_bin * SEC_IN_MINUTE:
+                    count = count + 1
+                    stop_time = time_rssi_elem[0]
+                    #print("Count, possible stop ",count,stop_time)
+                else:
+                    #print("To save: ",start_time,stop_time,count)
+                    # add current time_bin stats in result
+                    samples_dict[bssid].append((start_time,stop_time,count))
+                    # reset count and start time
+                    count = 0
+                    start_time = 0
+                    stop_time = 0
+                
+        # adding last interval (even if time_bin was not complete
+        if count != 0 and start_time != 0:
+            #print(start_time,stop_time,count)
+            samples_dict[bssid].append((start_time,stop_time,count))
+            
+    return samples_dict
+        
+        

@@ -95,6 +95,16 @@ def testing_get_ordered_time_list():
     ordered_times = user_data_handler.get_ordered_time_list(fingerprints)    
     print(ordered_times)
     
+def testing_get_bssid_info_from_data():
+    user_data = user_data_handler.retrieve_data_from_user("user_1_part",0,1)
+    bssid_dict = user_data_handler.get_bssid_info_from_data(user_data)
+    print(bssid_dict)
+
+def testing_get_bssid_sample_frequency_over_time_bin():
+    user_data = user_data_handler.retrieve_data_from_user("user_1_part",0,1)
+    bssid_dict = user_data_handler.get_bssid_info_from_data(user_data)
+    samples_dict = user_data_handler.get_bssid_sample_frequency_over_time_bin(bssid_dict, 1)
+    print(samples_dict)
 #print("This is testing")
 #testing_data_import()
 #testing_get_unique_timestamps()
@@ -105,4 +115,6 @@ def testing_get_ordered_time_list():
 #testing_get_signal_similarity()
 #testing_get_most_used()
 #testing_get_most_common_bssids()
-testing_get_ordered_time_list()
+#testing_get_ordered_time_list()
+testing_get_bssid_info_from_data()
+testing_get_bssid_sample_frequency_over_time_bin()
