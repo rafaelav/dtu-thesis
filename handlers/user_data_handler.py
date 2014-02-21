@@ -84,6 +84,16 @@ def get_unique_bssid_from_fingerprints(fingerprints_dict):
         
     return bssid_list 
 
+def get_unique_bssid_from_bssid_based_dictionary(bssid_dict):
+    """Returns list with unique bssid from given dictionary which has as keys bssids"""
+    bssid_list = []
+    
+    for bssid in bssid_dict.keys():
+        if bssid not in bssid_list:
+            bssid_list.append(bssid)
+        
+    return bssid_list 
+
 
 def generate_color_codes_for_bssid(bssid_list):
     """ Returns a dictionary that has as key a bssid and as value an associated auto-generated color for that bssid"""
@@ -271,7 +281,7 @@ def get_bssid_sample_frequency_over_time_bin(bssid_dict, time_bin):
     """Returns a dictionary with the bssid as key and a list of (start_time,end_time,samples) elements representing the number of apperances (samples) of the bssid from start to end time. Start and end should not be more than time_bin minutes apart"""   
     samples_dict = dict()
     for bssid in bssid_dict.keys():
-        print(bssid)
+        #print(bssid)
         samples_dict[bssid] = []
         
         start_time = 0
@@ -279,7 +289,7 @@ def get_bssid_sample_frequency_over_time_bin(bssid_dict, time_bin):
         stop_time = 0
         
         for time_rssi_elem in bssid_dict[bssid]:
-            print(time_rssi_elem)
+            #print(time_rssi_elem)
             if start_time == 0:
                 start_time = time_rssi_elem[0]
                 count = 1

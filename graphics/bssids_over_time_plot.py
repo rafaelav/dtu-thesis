@@ -149,7 +149,7 @@ def prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider,
     print("Data for user "+user_file+" prepared for plotting. Moving on to actually plotting...")            
     plot_for_bssid(colors, data_to_plot, username, start_day, days_to_consider, most_common_bssids_legend)#, time_list)
     
-def prepare_data_and_start_plot(user_file, start_day, days_to_consider, n_best_signal_bssids, m_most_popular_bssids, max_in_legend):
+def prepare_data_and_start_plot_bssid_over_time(user_file, start_day, days_to_consider, n_best_signal_bssids, m_most_popular_bssids, max_in_legend):
     # get data from file
     user_data = user_data_handler.retrieve_data_from_user(user_file,start_day,days_to_consider)
     
@@ -182,5 +182,5 @@ def prepare_data_and_start_plot(user_file, start_day, days_to_consider, n_best_s
     prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, color_codes, most_common_bssids_legend)#, time_list)
 
 for i in range(1,2):
-    prepare_data_and_start_plot("user_"+str(i)+"_sorted",0,1,-1,-1,10)
+    prepare_data_and_start_plot_bssid_over_time("user_"+str(i)+"_sorted",0,1,-1,-1,10)
 #prepare_data_and_start_plot("user_1_sorted",0,1,-1,10)
