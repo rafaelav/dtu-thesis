@@ -101,9 +101,17 @@ def testing_get_bssid_info_from_data():
     print(bssid_dict)
 
 def testing_get_bssid_sample_frequency_over_time_bin():
-    user_data = user_data_handler.retrieve_data_from_user("user_1_part",0,1)
+    user_data = user_data_handler.retrieve_data_from_user("user_1_sorted",0,1)
     bssid_dict = user_data_handler.get_bssid_info_from_data(user_data)
-    samples_dict = user_data_handler.get_bssid_sample_frequency_over_time_bin(bssid_dict, 1)
+    samples_dict = user_data_handler.get_bssid_sample_frequency_over_time_bin(bssid_dict, 5)
+    #print(samples_dict)
+def testing_get_bssid_sample_frequency_over_time_bin_all():
+    user_data = user_data_handler.retrieve_data_from_user("user_1_sorted",0,1)
+    most_common_bssids  = user_data_handler.get_most_common_bssids(user_data, 10)
+    bssid_dict = user_data_handler.get_bssid_info_from_data(user_data,most_common_bssids)
+    data_start_time = user_data[0][1]
+    print("Data start: ",data_start_time)
+    samples_dict = user_data_handler.get_bssid_sample_frequency_over_time_bin_all(bssid_dict, 5, data_start_time, user_data)
     print(samples_dict)
 #print("This is testing")
 #testing_data_import()
@@ -116,5 +124,5 @@ def testing_get_bssid_sample_frequency_over_time_bin():
 #testing_get_most_used()
 #testing_get_most_common_bssids()
 #testing_get_ordered_time_list()
-testing_get_bssid_info_from_data()
-testing_get_bssid_sample_frequency_over_time_bin()
+#testing_get_bssid_info_from_data()
+testing_get_bssid_sample_frequency_over_time_bin_all()

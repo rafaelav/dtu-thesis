@@ -277,11 +277,12 @@ def get_ordered_time_list(fingerprints):
     time_list = sorted(time_list, key=lambda x: x)
     return time_list
 
+# NOT USED
 def get_bssid_sample_frequency_over_time_bin(bssid_dict, time_bin):
-    """Returns a dictionary with the bssid as key and a list of (start_time,end_time,samples) elements representing the number of apperances (samples) of the bssid from start to end time. Start and end should not be more than time_bin minutes apart"""   
+    #Returns a dictionary with the bssid as key and a list of (start_time,end_time,samples) elements representing the number of apperances (samples) of the bssid from start to end time. Start and end should not be more than time_bin minutes apart   
     samples_dict = dict()
     for bssid in bssid_dict.keys():
-        #print(bssid)
+        print(bssid)
         samples_dict[bssid] = []
         
         start_time = 0
@@ -294,7 +295,7 @@ def get_bssid_sample_frequency_over_time_bin(bssid_dict, time_bin):
                 start_time = time_rssi_elem[0]
                 count = 1
                 stop_time = start_time
-                #print("Start ",start_time, count, stop_time)
+                print("Start ",start_time, count, stop_time)
             else:
                 #print("limit: ",time_bin * SEC_IN_MINUTE,"Next: ",time_rssi_elem[0])
                 if time_rssi_elem[0] - start_time < time_bin * SEC_IN_MINUTE:
@@ -302,7 +303,7 @@ def get_bssid_sample_frequency_over_time_bin(bssid_dict, time_bin):
                     stop_time = time_rssi_elem[0]
                     #print("Count, possible stop ",count,stop_time)
                 else:
-                    #print("To save: ",start_time,stop_time,count)
+                    print("To save: ",start_time,stop_time,count)
                     # add current time_bin stats in result
                     samples_dict[bssid].append((start_time,stop_time,count))
                     # reset count and start time
@@ -316,5 +317,43 @@ def get_bssid_sample_frequency_over_time_bin(bssid_dict, time_bin):
             samples_dict[bssid].append((start_time,stop_time,count))
             
     return samples_dict
+
+def get_bssid_sample_frequency_over_time_bin_all(bssid_dict, time_bin, data_start_time, full_data):
+    """Returns the dictionary with bssid keys and values as (start_date,end_date,count) given information about needed bssids and the time of first sample in our complete data about a user. The start date is a start of a time_bin, end date is the last aparition of the bssid in the time_bin and count represents number of aparitions of bssid in time_bin"""
+    samples_dict = dict()
+    count = dict()
+    stop_time = dict()
+
+    start_time = data_start_time
+    
+    for bssid in bssid_dict.keys():
+        samples_dict[bssid] = []
+
+        count[bssid] = 0
+        stop_time[bssid] = start_time
         
+    for line in full_data:
+        # need to change time bin
+        while line[1]-start_time >=time_bin*SEC_IN_MINUTE:
+            # save data
+            for bssid in bssid_dict.keys():
+                samples_dict[bssid].append((start_time,stop_time[bssid],count[bssid]))
+            # update start time
+            start_time = start_time + time_bin*SEC_IN_MINUTE
+            # reset data
+            for bssid in bssid_dict.keys():
+                stop_time[bssid] = start_time
+                count[bssid] = 0
+
+        # it's a bssid we're interested in
+        if line[3] in bssid_dict.keys():
+            count[line[3]] = count[line[3]] + 1 
+            stop_time[line[3]] = line[1]
+            
+                        
+    # adding last interval (even if time_bin was not complete
+    for bssid in bssid_dict.keys():
+        samples_dict[bssid].append((start_time,stop_time[bssid],count[bssid]))
+            
+    return samples_dict        
         

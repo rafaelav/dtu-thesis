@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 week   = {0:'Mon', 1:'Tue', 2:'Wed', 3:'Thu',  4:'Fri', 5:'Sat', 6:'Sun'}
 
-def plot_bssid_samples_over_time(bssid_samples_dict, colors_dict, username):
+def plot_bssid_samples_over_time(bssid_samples_dict, colors_dict, username, days_to_consider):
     for bssid in bssid_samples_dict:
         values = []
         dates = []
@@ -34,9 +34,10 @@ def plot_bssid_samples_over_time(bssid_samples_dict, colors_dict, username):
         ax.set_xticklabels(dates, rotation=90, size=6)
         
         plt.bar(pos, values, width, color=colors_dict[bssid])
-        fig.savefig("../../bars/"+username+"_"+str(bssid)+".png")
+        fig.savefig("../../plots/"+username+"/"+username+"_"+str(days_to_consider)+"days_plot"+"_"+str(bssid)+"_histo.png")
         fig.clear()
-        
+
+"""        
 def prepare_data_to_plot_for_bssid_bars(user_file, start_day, days_to_consider, m_most_popular_bssids, time_bin):
     # get data from file
     user_data = user_data_handler.retrieve_data_from_user(user_file,start_day,days_to_consider)
@@ -54,12 +55,14 @@ def prepare_data_to_plot_for_bssid_bars(user_file, start_day, days_to_consider, 
     #print(bssid_info)
     
     # get number of samples based on info we have on bssids (for time_bin)
-    bssid_samples_dict = user_data_handler.get_bssid_sample_frequency_over_time_bin(bssid_info, time_bin)
+#    bssid_samples_dict = user_data_handler.get_bssid_sample_frequency_over_time_bin(bssid_info, time_bin)
+    data_start_time = user_data[0][1]
+    bssid_samples_dict = user_data_handler.get_bssid_sample_frequency_over_time_bin_all(bssid_info, time_bin, data_start_time, user_data)
     
     bssid_list = user_data_handler.get_unique_bssid_from_bssid_based_dictionary(bssid_samples_dict)
     
     colors_dict = user_data_handler.generate_color_codes_for_bssid(bssid_list) 
     
     plot_bssid_samples_over_time(bssid_samples_dict, colors_dict, user_file)
-
-prepare_data_to_plot_for_bssid_bars("user_1_sorted", 0, 3, 10, 5)
+"""
+#prepare_data_to_plot_for_bssid_bars("user_1_sorted", 0, 1, 10, 5)
