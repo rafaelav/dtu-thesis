@@ -11,10 +11,14 @@ import os
 from graphics import bssids_signals_time_plot
 from graphics import bssids_samples_time_plot
 
-def launch_plots(user_file,start_day,days_to_consider, time_bin, n_best_signal_bssids, m_most_popular_bssids, max_in_legend):
+from matplotlib.backends.backend_pdf import PdfPages
+
+def launch_plots(user_file,start_day,days_to_consider, time_bin, n_best_signal_bssids, m_most_popular_bssids, max_in_legend, time_bin_len):
     """ Common data """
     # get data from file
     user_data = user_data_handler.retrieve_data_from_user(user_file,start_day,days_to_consider)
+    data_start_time = user_data[0][1]
+    data_end_data = user_data[len(user_data)-1][1]
 
     most_common_bssids = user_data_handler.get_most_common_bssids(user_data, m_most_popular_bssids)
     # find out most popular max_in_legend bssids (the ones who will be put in the plot legend)
@@ -45,13 +49,12 @@ def launch_plots(user_file,start_day,days_to_consider, time_bin, n_best_signal_b
     
     # plot
     print("Data for user "+user_file+" retrieved. Moving on to preparing the data for plotting...")
-    bssids_signals_time_plot.prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, color_codes, most_common_bssids_legend)#, time_list)
+    fig_sig_strength = bssids_signals_time_plot.prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, color_codes, most_common_bssids_legend)#, time_list)
 
 
     """ Plotting bssid samples as histograms"""
 
     # get number of samples based on info we have on bssids (for time_bin)
-    data_start_time = user_data[0][1]
     bssid_samples_dict = user_data_handler.get_bssid_sample_frequency_over_time_bin_all(bssid_info_bars, time_bin, data_start_time, user_data)
     
     bssid_list = user_data_handler.get_unique_bssid_from_bssid_based_dictionary(bssid_samples_dict)
@@ -65,11 +68,19 @@ def launch_plots(user_file,start_day,days_to_consider, time_bin, n_best_signal_b
             colors_dict[bssid] = color_codes[bssid]
     
     # plot bars
-    bssids_samples_time_plot.plot_bssid_samples_over_time(bssid_samples_dict, colors_dict, user_file, days_to_consider)
+    fig_list = bssids_samples_time_plot.plot_bssid_samples_over_time(user_data, bssid_samples_dict, colors_dict, user_file, days_to_consider,time_bin_len,data_start_time,data_end_data)
+    
+    return fig_sig_strength, fig_list
     
 for i in range(1,2):
     username = "user_"+str(i)+"_sorted"
     directory = "../../plots/"+username+"/"
     if not os.path.exists(directory):
         os.makedirs(directory)
-    launch_plots(username, 0, 1, 5, -1, 10, 10) 
+    fig_sig_strength, fig_list = launch_plots(username, 0, 1, 5, -1, 10, 10, 60)
+    
+    for hist_fig in fig_list:
+        pp = PdfPages(directory+"signal_strength_and_histograms_"+str(hist_fig[1])+".pdf")
+        pp.savefig(fig_sig_strength)
+        pp.savefig(hist_fig[0])
+        pp.close() 
