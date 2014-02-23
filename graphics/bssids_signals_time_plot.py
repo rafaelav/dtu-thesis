@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import datetime
 
 NO_SECS_PER_HOUR = 60*60
+NO_SECS_PER_MIN = 60
 HOURS_BETWEEN_TICKS = 2
 TIME_BEFORE_INTERRUPT = 60*30 # 30 mins
 
@@ -56,8 +57,31 @@ def get_real_times_for_ticklocs(data_to_plot, count):
     
     #print(timestamps_to_return)
     return timestamps_to_return
+def get_utc_from_epoch(epoch_time):
+    date_val = datetime.datetime.utcfromtimestamp(int(epoch_time))
+    return week[date_val.weekday()]+"\n"+str(date_val.hour)+":"+str(date_val.minute)
 
-def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_consider, most_common_bssids_legend):#, time_list):
+def get_xticks_xlabels(data_start_time, data_end_time, no_of_ticks, between_ticks):    
+    dates_epoch = []
+    dates_utc = []
+    time_to_add_epoch = data_start_time
+    
+    added = 0
+    while added < no_of_ticks:
+        timestamp = time_to_add_epoch
+        dates_epoch.append(timestamp)
+        dates_utc.append(get_utc_from_epoch(timestamp))
+        added = added + 1
+        time_to_add_epoch = between_ticks*NO_SECS_PER_MIN + time_to_add_epoch    
+    
+    # last time stamp
+    timestamp = data_end_time
+    dates_epoch.append(timestamp)
+    dates_utc.append(get_utc_from_epoch(timestamp))
+        
+    return dates_epoch, dates_utc
+
+def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_consider, most_common_bssids_legend, time_bins_len, start_time, end_time):#, time_list):
     """color_to_use - dict with bssid:color, data_to_plot - dict with bssd: ([list_of_time_when_appears],[list_of_strength_at_time])"""
     """username - user for which plotting is done (filename), start_day - day for which plotting starts, days_to_consider - time interval for plot"""
     #"""(NOT USED CURRENTLY) time_list - list with unique time moments found in fingerprints over the days_to_consider starting on start_day interval"""
@@ -66,7 +90,7 @@ def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_cons
     # erasing anything from before
     fig = plt.figure(1)
     fig.clear()
-    fig.set_size_inches(15,3)    
+    fig.set_size_inches(15,5)    
     
     ax = fig.add_subplot(111)
         
@@ -92,12 +116,18 @@ def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_cons
                 first = False
 
     # change labels
-    locs, labels = plt.xticks()
+    """locs, labels = plt.xticks()
     ticks_list = ax.xaxis.get_majorticklocs()
     count_ticks = len(ticks_list)
     real_moments_ticks = get_real_times_for_ticklocs(data_to_plot, count_ticks)
     labels = get_info_on_time(real_moments_ticks) # new labels
-    plt.xticks(locs, labels)
+    plt.xticks(locs, labels)"""
+    
+    no_of_ticks = (end_time - start_time)/(time_bins_len*60) + 1
+    print(no_of_ticks)
+    ticks, labels_utc = get_xticks_xlabels(start_time,end_time, no_of_ticks, time_bins_len)
+        
+    plt.xticks(ticks, labels_utc, rotation = 90)
     
     # Text over plot (title, axes)
     plt.title("Access Points - Start (day): "+str(start_day)+" Plot over (days): "+str(days_to_consider)+" User: "+username)
@@ -115,7 +145,7 @@ def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_cons
     return fig
     #plt.show()
 
-def prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, colors, most_common_bssids_legend):#, time_list):
+def prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, colors, most_common_bssids_legend, time_bins_len, start_time, end_time):#, time_list):
     username = user_file    
     data_to_plot = dict()
     
@@ -148,7 +178,7 @@ def prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider,
         data_to_plot[mkey].append((time_ticks_list, strength_list))
     
     print("Data for user "+user_file+" prepared for plotting. Moving on to actually plotting...")            
-    plotted_fig = plot_for_bssid(colors, data_to_plot, username, start_day, days_to_consider, most_common_bssids_legend)#, time_list)
+    plotted_fig = plot_for_bssid(colors, data_to_plot, username, start_day, days_to_consider, most_common_bssids_legend, time_bins_len, start_time, end_time)#, time_list)
     return plotted_fig
     
 """

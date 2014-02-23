@@ -49,7 +49,7 @@ def launch_plots(user_file,start_day,days_to_consider, time_bin, n_best_signal_b
     
     # plot
     print("Data for user "+user_file+" retrieved. Moving on to preparing the data for plotting...")
-    fig_sig_strength = bssids_signals_time_plot.prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, color_codes, most_common_bssids_legend)#, time_list)
+    fig_sig_strength = bssids_signals_time_plot.prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, color_codes, most_common_bssids_legend,time_bin_len,data_start_time,data_end_data)#, time_list)
 
 
     """ Plotting bssid samples as histograms"""
