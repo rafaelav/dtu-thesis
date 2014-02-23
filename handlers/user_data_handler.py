@@ -320,6 +320,8 @@ def get_bssid_sample_frequency_over_time_bin(bssid_dict, time_bin):
 
 def get_bssid_sample_frequency_over_time_bin_all(bssid_dict, time_bin, data_start_time, full_data):
     """Returns the dictionary with bssid keys and values as (start_date,end_date,count) given information about needed bssids and the time of first sample in our complete data about a user. The start date is a start of a time_bin, end date is the last aparition of the bssid in the time_bin and count represents number of aparitions of bssid in time_bin"""
+    # even when there are 0 samples per time bin
+    
     samples_dict = dict()
     count = dict()
     stop_time = dict()
@@ -351,9 +353,52 @@ def get_bssid_sample_frequency_over_time_bin_all(bssid_dict, time_bin, data_star
             stop_time[line[3]] = line[1]
             
                         
-    # adding last interval (even if time_bin was not complete
-    for bssid in bssid_dict.keys():
-        samples_dict[bssid].append((start_time,stop_time[bssid],count[bssid]))
+    # adding last interval (even if time_bin was not complete (if there is last interval)
+    found = False
+    for bssid in count.keys():
+        if count[bssid] != 0:
+            found = True
+            break
+    if found == True:
+        for bssid in bssid_dict.keys():
+            samples_dict[bssid].append((start_time,stop_time[bssid],count[bssid]))
             
     return samples_dict        
+
+def get_bssid_values_for_rssis_per_time_bins(full_data, bssid_list, time_bin_len):
+    """Returns a dictionary. bssid is key. Each bssid has a list of tuples (start_time_of_bin, [list of rssis in this time bin for current bssid])"""
+    """full_data - data for a specific time span. bssid_list - list of bssids we're interested in. time_bin_len - length of the needed time bins"""
+    start_time = full_data[0][1]
+    
+    values_per_bins = dict()    # [bssid] = (start_time, [list of rssi values in the time bin starting from start_time])
+    signal_values = dict()      # [bssid] = [list of rssi for current time bin]
         
+    for bssid in bssid_list:
+        values_per_bins[bssid] =[]
+        signal_values[bssid] = []
+
+    for line in full_data:
+        # need to change time bin
+        while line[1]-start_time >=time_bin_len*SEC_IN_MINUTE:
+            # save data
+            for bssid in bssid_list:
+                values_per_bins[bssid].append((start_time, signal_values[bssid]))
+            # update start time
+            start_time = start_time + time_bin_len*SEC_IN_MINUTE
+            # reset data
+            for bssid in bssid_list:
+                signal_values[bssid] = []
+
+        # it's a bssid we're interested in
+        if line[3] in bssid_list:
+            signal_values[line[3]].append(line[4]) 
+
+    # adding last interval (even if time_bin was not complete (if there is last interval)
+    found = False
+    for bssid in signal_values.keys():
+        if len(signal_values[bssid]) != 0:
+            found = True
+            break
+    if found == True:
+        for bssid in bssid_list:
+            values_per_bins[bssid].append((start_time, signal_values[bssid]))

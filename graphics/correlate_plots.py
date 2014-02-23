@@ -77,7 +77,7 @@ for i in range(1,2):
     directory = "../../plots/"+username+"/"
     if not os.path.exists(directory):
         os.makedirs(directory)
-    fig_sig_strength, fig_list = launch_plots(username, 0, 1, 5, -1, 10, 10, 60)
+    fig_sig_strength, fig_list = launch_plots(username, 0, 1, 5, -1, -1, 10, 60)
     
     for hist_fig in fig_list:
         pp = PdfPages(directory+"signal_strength_and_histograms_"+str(hist_fig[1])+".pdf")
