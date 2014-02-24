@@ -10,15 +10,16 @@ from handlers import user_data_handler
 import os
 from graphics import bssids_signals_time_plot
 from graphics import bssids_samples_time_plot
+from graphics import bssids_rssi_avg_time
 
 from matplotlib.backends.backend_pdf import PdfPages
 
-def launch_plots(user_file,start_day,days_to_consider, time_bin, n_best_signal_bssids, m_most_popular_bssids, max_in_legend, time_bin_len):
+def launch_plots(user_file,start_day,days_to_consider, time_bin, n_best_signal_bssids, m_most_popular_bssids, max_in_legend, plot_time_interval):
     """ Common data """
     # get data from file
     user_data = user_data_handler.retrieve_data_from_user(user_file,start_day,days_to_consider)
     data_start_time = user_data[0][1]
-    data_end_data = user_data[len(user_data)-1][1]
+    data_end_time = user_data[len(user_data)-1][1]
 
     most_common_bssids = user_data_handler.get_most_common_bssids(user_data, m_most_popular_bssids)
     # find out most popular max_in_legend bssids (the ones who will be put in the plot legend)
@@ -49,7 +50,7 @@ def launch_plots(user_file,start_day,days_to_consider, time_bin, n_best_signal_b
     
     # plot
     print("Data for user "+user_file+" retrieved. Moving on to preparing the data for plotting...")
-    fig_sig_strength = bssids_signals_time_plot.prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, color_codes, most_common_bssids_legend,time_bin_len,data_start_time,data_end_data)#, time_list)
+    fig_sig_strength = bssids_signals_time_plot.prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, color_codes, most_common_bssids_legend,plot_time_interval,data_start_time,data_end_time)#, time_list)
 
 
     """ Plotting bssid samples as histograms"""
@@ -68,19 +69,32 @@ def launch_plots(user_file,start_day,days_to_consider, time_bin, n_best_signal_b
             colors_dict[bssid] = color_codes[bssid]
     
     # plot bars
-    fig_list = bssids_samples_time_plot.plot_bssid_samples_over_time(user_data, bssid_samples_dict, colors_dict, user_file, days_to_consider,time_bin_len,data_start_time,data_end_data)
+    fig_list_samples = bssids_samples_time_plot.plot_bssid_samples_over_time(user_data, bssid_samples_dict, colors_dict, user_file, days_to_consider,plot_time_interval,data_start_time,data_end_time)
     
-    return fig_sig_strength, fig_list
+    """ Plotting average signal strengths as histograms"""
+    # get averages dictionary
+    bssid_avg_dict = user_data_handler.get_bssid_values_for_rssis_per_time_bins(user_data, bssid_info_bars, time_bin)
+    
+    # plot bars
+    fig_list_avg = bssids_rssi_avg_time.plot_bssid_rssi_avg_over_time(user_data, bssid_avg_dict, color_codes, user_file, days_to_consider, plot_time_interval, data_start_time, data_end_time)
+
+
+    return fig_sig_strength, fig_list_samples, fig_list_avg
     
 for i in range(1,2):
     username = "user_"+str(i)+"_sorted"
     directory = "../../plots/"+username+"/"
     if not os.path.exists(directory):
         os.makedirs(directory)
-    fig_sig_strength, fig_list = launch_plots(username, 0, 1, 5, -1, -1, 10, 60)
+    fig_sig_strength, fig_list_samples, fig_list_avg = launch_plots(username, 0, 1, 5, -1, -1, 10, 60)
     
-    for hist_fig in fig_list:
-        pp = PdfPages(directory+"signal_strength_and_histograms_"+str(hist_fig[1])+".pdf")
+    if len(fig_list_avg) != len(fig_list_samples):
+        print("ERROR: Not the same number of figures with samples and with averages")
+        break
+    
+    for i in range(0,len(fig_list_samples)):
+        pp = PdfPages(directory+"complete_on_bssid"+str(fig_list_samples[i][1])+".pdf")
         pp.savefig(fig_sig_strength)
-        pp.savefig(hist_fig[0])
+        pp.savefig(fig_list_samples[i][0])
+        pp.savefig(fig_list_avg[i][0])
         pp.close() 
