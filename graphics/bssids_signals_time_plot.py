@@ -14,7 +14,7 @@ import datetime
 NO_SECS_PER_HOUR = 60*60
 NO_SECS_PER_MIN = 60
 HOURS_BETWEEN_TICKS = 2
-TIME_BEFORE_INTERRUPT = 60*30 # 30 mins
+TIME_BEFORE_INTERRUPT = 60*2 # 2 mins
 
 week   = {0:'Mon', 1:'Tue', 2:'Wed', 3:'Thu',  4:'Fri', 5:'Sat', 6:'Sun'}
 

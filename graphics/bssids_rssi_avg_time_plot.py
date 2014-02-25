@@ -34,9 +34,15 @@ def get_xticks_xlabels_from_time(data_start_time, data_end_time, no_of_ticks, be
         
     return dates_epoch, dates_utc
 
-def calculate_average_signal_strength(signal_list):
+def calculate_average_signal_strength(signal_list,max_possible,option):
+    if option == 1:
+        avg_divider = len(signal_list)
+    else:
+        avg_divider = max_possible
     # no signal in this time bin
-    if len(signal_list) == 0:
+#    if len(signal_list) == 0:
+#        return 0
+    if avg_divider == 0:
         return 0
     
     the_sum = 0
@@ -44,11 +50,11 @@ def calculate_average_signal_strength(signal_list):
     for s in signal_list:
         the_sum = the_sum + s
     
-    the_sum = int(the_sum / len(signal_list))
+    the_sum = int(the_sum / avg_divider)#len(signal_list))
     
     return the_sum
 
-def plot_bssid_rssi_avg_over_time(full_data, bssid_sig_dict, colors_dict, username, days_to_consider, time_bins_len, start_time, end_time):
+def plot_bssid_rssi_avg_over_time(full_data, bssid_sig_dict, colors_dict, username, days_to_consider, time_bins_len,option, start_time, end_time):
     fig_list = []
     for bssid in bssid_sig_dict.keys():
         averages = []
@@ -56,7 +62,7 @@ def plot_bssid_rssi_avg_over_time(full_data, bssid_sig_dict, colors_dict, userna
         dates_epoch = []
     
         for elem in bssid_sig_dict[bssid]:
-            avg = calculate_average_signal_strength(elem[1])
+            avg = calculate_average_signal_strength(elem[1],elem[2],option)
             averages.append(avg)
             start_time_val = datetime.datetime.utcfromtimestamp(int(elem[0]))
             dates_epoch.append(elem[0])
@@ -69,13 +75,14 @@ def plot_bssid_rssi_avg_over_time(full_data, bssid_sig_dict, colors_dict, userna
         print(bssid)
         print(averages)
         
-        width = 200
+        #width = 200
         print(start_time,end_time)
         no_of_ticks = (end_time - start_time)/(time_bins_len*NO_SECS_PER_MIN) + 1
         print(time_bins_len,no_of_ticks)
         ticks, labels_utc = get_xticks_xlabels_from_time(start_time, end_time, no_of_ticks, time_bins_len)#(dates_epoch, no_of_ticks)
         
-        plt.bar(dates_epoch, averages, width, color=colors_dict[bssid])
+        #plt.bar(dates_epoch, averages, width, color=colors_dict[bssid])
+        plt.plot(dates_epoch, averages, 'o-', color=colors_dict[bssid])
         plt.xticks(ticks, labels_utc, rotation = 90)
         
         plt.title("Average signal per time bin for bssid "+str(bssid)+" Plot over (days): "+str(days_to_consider)+" User: "+username)

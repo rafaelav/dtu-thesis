@@ -376,19 +376,26 @@ def get_bssid_values_for_rssis_per_time_bins(full_data, bssid_dict, time_bin_len
     for bssid in bssid_dict.keys():
         values_per_bins[bssid] =[]
         signal_values[bssid] = []
+        
+    unique_timestamps = []
 
     for line in full_data:
         # need to change time bin
         while line[1]-start_time >=time_bin_len*SEC_IN_MINUTE:
             # save data
             for bssid in bssid_dict.keys():
-                values_per_bins[bssid].append((start_time, signal_values[bssid]))
+                values_per_bins[bssid].append((start_time, signal_values[bssid], len(unique_timestamps)))
             # update start time
             start_time = start_time + time_bin_len*SEC_IN_MINUTE
             # reset data
             for bssid in bssid_dict.keys():
                 signal_values[bssid] = []
+            #print(unique_timestamps)
+            unique_timestamps = []
 
+        # update time_stamps so that we can calculate average over max possible number of aparitions
+        if line[1] not in unique_timestamps:
+            unique_timestamps.append(line[1])
         # it's a bssid we're interested in
         if line[3] in bssid_dict.keys():
             signal_values[line[3]].append(line[4]) 
@@ -401,6 +408,53 @@ def get_bssid_values_for_rssis_per_time_bins(full_data, bssid_dict, time_bin_len
             break
     if found == True:
         for bssid in bssid_dict.keys():
-            values_per_bins[bssid].append((start_time, signal_values[bssid]))
+            values_per_bins[bssid].append((start_time, signal_values[bssid], len(unique_timestamps)))
 
     return values_per_bins
+
+def get_running_rssi_average_for_time_window(full_data, bssid_dict, time_window):
+    """Returns a dictionary. Key: bssid, value: list of elements like (start_time,end_time,avg) representing start time for measurement, end time for mesurement and average value of rssi for bssid in that time span"""
+    bssid_rssi_list_dict = dict() # used to keep rssi values for each bssid so that at end of time window can calculate the avg
+    bssid_running_avg_dict = dict()
+    
+    for bssid in bssid_dict.keys():
+        bssid_running_avg_dict[bssid] = []
+        
+    for i in range(0,len(full_data)):
+        # reset stuff
+        start_time = full_data[i][1]
+        #print(start_time)
+        crt_i = i
+        unique_timestamp = []
+        for bssid in bssid_dict.keys():
+            bssid_rssi_list_dict[bssid] = []
+        
+        # get rssi for time_window for each bssid
+        while crt_i < len(full_data) and full_data[crt_i][1]-start_time <=time_window*SEC_IN_MINUTE:
+            if full_data[crt_i][1] not in unique_timestamp:
+                unique_timestamp.append(full_data[crt_i][1])
+            if full_data[crt_i][3] in bssid_dict.keys():
+                bssid_rssi_list_dict[full_data[crt_i][3]].append(full_data[crt_i][4])
+            crt_i = crt_i + 1
+        
+        for bssid in bssid_dict.keys():
+            average = 0
+            #print(bssid,bssid_rssi_list_dict[bssid])
+            for rssi in bssid_rssi_list_dict[bssid]:
+                average = average + rssi
+            #print(average)
+            #print(unique_timestamp)
+
+            if len(bssid_rssi_list_dict[bssid]) == 0:
+                average_over_non_null_rssi = 0
+            else:
+                average_over_non_null_rssi = average/len(bssid_rssi_list_dict[bssid])
+            
+            if len(unique_timestamp) == 0:
+                average_over_max_possible_apparitions = 0
+            else:
+                average_over_max_possible_apparitions = average/len(unique_timestamp)
+            #print(average_over_non_null_rssi,average_over_max_possible_apparitions)
+            bssid_running_avg_dict[bssid].append((start_time,average_over_non_null_rssi,average_over_max_possible_apparitions))
+    
+    return bssid_running_avg_dict
