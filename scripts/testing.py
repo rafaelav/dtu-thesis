@@ -144,5 +144,5 @@ def testing_get_running_rssi_average_for_time_window():
 #testing_get_ordered_time_list()
 #testing_get_bssid_info_from_data()
 #testing_get_bssid_sample_frequency_over_time_bin_all()
-#testing_get_bssid_values_for_rssis_per_time_bins()
-testing_get_running_rssi_average_for_time_window()
+testing_get_bssid_values_for_rssis_per_time_bins()
+#testing_get_running_rssi_average_for_time_window()

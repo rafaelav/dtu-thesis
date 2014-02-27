@@ -103,7 +103,7 @@ for i in range(1,2):
     directory = "../../plots/"+username+"/"
     if not os.path.exists(directory):
         os.makedirs(directory)
-    fig_sig_strength, fig_list_samples, fig_list_avg, fig_list_run_avg, fig_list_run_avg_5,fig_list_run_avg_10 = launch_plots(username, 0, 1, 5, 2, -1, -1, 10, 60, 2)
+    fig_sig_strength, fig_list_samples, fig_list_avg, fig_list_run_avg, fig_list_run_avg_5,fig_list_run_avg_10 = launch_plots(username, 0, 1, 5, 2, -1, -1, 10, 60, 1)
     
     if len(fig_list_avg) != len(fig_list_samples):
         print("ERROR: Not the same number of figures with samples and with averages")

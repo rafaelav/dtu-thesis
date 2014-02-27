@@ -34,26 +34,6 @@ def get_xticks_xlabels_from_time(data_start_time, data_end_time, no_of_ticks, be
         
     return dates_epoch, dates_utc
 
-"""def calculate_average_signal_strength(signal_list,max_possible,option):
-    if option == 1:
-        avg_divider = len(signal_list)
-    else:
-        avg_divider = max_possible
-    # no signal in this time bin
-#    if len(signal_list) == 0:
-#        return 0
-    if avg_divider == 0:
-        return 0
-    
-    the_sum = 0
-    
-    for s in signal_list:
-        the_sum = the_sum + s
-    
-    the_sum = int(the_sum / avg_divider)#len(signal_list))
-    
-    return the_sum"""
-
 def plot_bssid_rssi_avg_over_time(full_data, running_avg_dict, colors_dict, username, days_to_consider, time_bins_len,option,time_window, start_time, end_time):
     fig_list = []
     for bssid in running_avg_dict.keys():
@@ -62,9 +42,9 @@ def plot_bssid_rssi_avg_over_time(full_data, running_avg_dict, colors_dict, user
         dates_epoch = []
     
         for elem in running_avg_dict[bssid]:
-            if option == 1:
+            if option == 1: # rssi sum / all non_null rssi
                 avg = elem[1]
-            else:
+            else:           # rssi sum / all timestamps in bin (max possible apparitions)
                 avg = elem[2] 
             averages.append(avg)
             start_time_val = datetime.datetime.utcfromtimestamp(int(elem[0]))

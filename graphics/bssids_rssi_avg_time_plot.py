@@ -35,10 +35,20 @@ def get_xticks_xlabels_from_time(data_start_time, data_end_time, no_of_ticks, be
     return dates_epoch, dates_utc
 
 def calculate_average_signal_strength(signal_list,max_possible,option):
-    if option == 1:
+    count = 0
+    
+    if option == 1: # sum of non null rssi/ no of non null rssi
         avg_divider = len(signal_list)
-    else:
+    # NOT TO BE USED
+    elif option == 2: # the sum of positive values is divided to the number of unique timestamps in bin
         avg_divider = max_possible
+    # SAME AS 1
+    else: # only take into account the non null vals: [5,0,0,5] = (5 + 5) / 2 = 5
+        count = 0
+        for s in signal_list:
+            if s!= 0:
+                count = count + 1
+        avg_divider = count
     # no signal in this time bin
 #    if len(signal_list) == 0:
 #        return 0

@@ -384,6 +384,7 @@ def get_bssid_values_for_rssis_per_time_bins(full_data, bssid_dict, time_bin_len
         while line[1]-start_time >=time_bin_len*SEC_IN_MINUTE:
             # save data
             for bssid in bssid_dict.keys():
+                #print("here",bssid,signal_values[bssid])
                 values_per_bins[bssid].append((start_time, signal_values[bssid], len(unique_timestamps)))
             # update start time
             start_time = start_time + time_bin_len*SEC_IN_MINUTE
@@ -408,6 +409,7 @@ def get_bssid_values_for_rssis_per_time_bins(full_data, bssid_dict, time_bin_len
             break
     if found == True:
         for bssid in bssid_dict.keys():
+            #print("here",bssid,signal_values[bssid])
             values_per_bins[bssid].append((start_time, signal_values[bssid], len(unique_timestamps)))
 
     return values_per_bins
@@ -439,12 +441,14 @@ def get_running_rssi_average_for_time_window(full_data, bssid_dict, time_window)
         
         for bssid in bssid_dict.keys():
             average = 0
-            #print(bssid,bssid_rssi_list_dict[bssid])
+
+            # list bssid_rssi_list_dict[bssid] contains only non null rssi
             for rssi in bssid_rssi_list_dict[bssid]:
                 average = average + rssi
             #print(average)
             #print(unique_timestamp)
-
+            
+            # average calculated as sum of non nul values over all rssi (including the ones with val 0 identified in time bin) 
             if len(bssid_rssi_list_dict[bssid]) == 0:
                 average_over_non_null_rssi = 0
             else:
@@ -454,7 +458,8 @@ def get_running_rssi_average_for_time_window(full_data, bssid_dict, time_window)
                 average_over_max_possible_apparitions = 0
             else:
                 average_over_max_possible_apparitions = average/len(unique_timestamp)
+                
             #print(average_over_non_null_rssi,average_over_max_possible_apparitions)
-            bssid_running_avg_dict[bssid].append((start_time,average_over_non_null_rssi,average_over_max_possible_apparitions))
+            bssid_running_avg_dict[bssid].append((start_time, average_over_non_null_rssi,average_over_max_possible_apparitions))
     
     return bssid_running_avg_dict
