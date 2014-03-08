@@ -119,13 +119,13 @@ def plot_bssid_rssi_avg_over_time(full_data, bssid_sig_dict, colors_dict, userna
         fig.clear()
         fig.set_size_inches(15,5)    
         
-        print(bssid)
-        print(averages)
+        #print(bssid)
+        #print(averages)
         
         #width = 200
-        print(start_time,end_time)
+        #print(start_time,end_time)
         no_of_ticks = (end_time - start_time)/(time_bins_len*NO_SECS_PER_MIN) + 1
-        print(time_bins_len,no_of_ticks)
+        #print(time_bins_len,no_of_ticks)
         ticks, labels_utc = get_xticks_xlabels_from_time(start_time, end_time, no_of_ticks, time_bins_len)#(dates_epoch, no_of_ticks)
         
         #plt.plot(dates_epoch, averages, 'o-', color=colors_dict[bssid])

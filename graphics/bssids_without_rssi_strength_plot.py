@@ -7,6 +7,8 @@ import sys
 sys.path.append( ".." )
 from handlers import user_data_handler
 
+import pickle
+
 import datetime
 import matplotlib.pyplot as plt
 week   = {0:'Mon', 1:'Tue', 2:'Wed', 3:'Thu',  4:'Fri', 5:'Sat', 6:'Sun'}
@@ -96,6 +98,7 @@ def prepare_data_for_bssid_without_rssi_strength(user_file, start_day, days_to_c
     bssid_times_and_rssis = user_data_handler.get_bssid_info_from_data(user_data, most_common_bssids)
     
     bssid_list = user_data_handler.get_unique_bssid_from_bssid_based_dictionary(bssid_times_and_rssis)
+    print("List of found bssids [count = "+str(len(bssid_list))+"]: ",bssid_list)
     # get new colors
     colors_dict = user_data_handler.generate_color_codes_for_bssid(bssid_list)
     
@@ -115,15 +118,11 @@ def plot_data(start_time, end_time, plot_time_interval, presence_on_rows, column
     fig = plt.figure()
     fig.clear()
     fig.set_size_inches(15,5)        
-    crt_86 = 0
     for bssid in bssids_list:
         #print("Something",presence_on_rows[bssid])
         marks_list = presence_on_rows[bssid]
         for i in range(0,len(presence_on_rows[bssid])):
             if marks_list[i] == 1:
-                if bssid == 86:
-                    crt_86 = crt_86 + 1
-                    print(crt_86,"Ploted: ",column_elements[i],column_elements[i]+time_bin*SECS_IN_MINUTE)
                 plt.plot([column_elements[i],column_elements[i]+time_bin*SECS_IN_MINUTE - 1], [values_for_bssids[bssid],values_for_bssids[bssid]], '-',linewidth=10, color=color_dict[bssid])
             else:
                 plt.plot([column_elements[i],column_elements[i]+time_bin*SECS_IN_MINUTE - 1], [values_for_bssids[bssid],values_for_bssids[bssid]], '-',linewidth=10, color="white")
@@ -134,13 +133,13 @@ def plot_data(start_time, end_time, plot_time_interval, presence_on_rows, column
     plt.ylabel("Names of access points", fontsize=10)    
     
     no_of_ticks = (end_time - start_time)/(plot_time_interval*SECS_IN_MINUTE) + 1
-    print(plot_time_interval,no_of_ticks)
+    #print(plot_time_interval,no_of_ticks)
     ticks, labels_utc = get_xticks_xlabels_from_time(start_time, end_time, no_of_ticks, plot_time_interval)#(dates_epoch, no_of_ticks)
         
     plt.xticks(ticks, labels_utc, rotation = 90)
     plt.yticks(values_list, bssids_list)
     
-    fig.savefig(username+"_"+str(days_to_consider)+"days_no_rssi_plot.png")
+    fig.savefig("../../plots/"+username+"/"+username+"_"+str(days_to_consider)+"days_no_rssi_plot.png")
 def bssid_without_rssi_strength_plot(user_file, start_day, days_to_consider, m_most_popular_bssids, time_bin, plot_time_interval):
     # prepare needed data
     user_data, bssid_times_and_rssis_dict, color_dict = prepare_data_for_bssid_without_rssi_strength(user_file, start_day, days_to_consider, m_most_popular_bssids)
@@ -150,11 +149,29 @@ def bssid_without_rssi_strength_plot(user_file, start_day, days_to_consider, m_m
     # get matrix
     presence_on_rows, column_elements =  get_bssid_presence_matrix(user_file, user_data, bssid_times_and_rssis_dict, time_bin)
     
+    print("Need to pickle")
+    pickle.dump(presence_on_rows, open("../../plots/"+username+"/"+"pickled_matrix_"+username+"_"+str(days_to_consider)+"days.p", "wb"))
+    print("Pickled")
+    
+    if m_most_popular_bssids == -1:
+        limit = 50
+        user_data, bssid_times_and_rssis_dict, color_dict = prepare_data_for_bssid_without_rssi_strength(user_file, start_day, days_to_consider, limit)
+        presence_on_rows, column_elements =  get_bssid_presence_matrix(user_file, user_data, bssid_times_and_rssis_dict, time_bin)
+    
     #print(column_elements)
-    for bssid in presence_on_rows.keys():
-        print(str(bssid),presence_on_rows[bssid])
+    #for bssid in presence_on_rows.keys():
+    #    print(str(bssid),presence_on_rows[bssid])
     
     start_time = user_data[0][1]
     end_time = user_data[len(user_data)-1][1]
     plot_data(start_time, end_time, plot_time_interval, presence_on_rows, column_elements, color_dict, time_bin, user_file, days_to_consider)
-bssid_without_rssi_strength_plot("user_1_sorted", 0, 1, 10, 5, 60)
+
+for i in range(1,3):
+    print("For user "+str(i))
+    username = "user_"+str(i)+"_sorted"
+    start_day = 0
+    no_of_days = 2
+    most_common = -1
+    time_bin = 5
+    plot_interval = 60
+    bssid_without_rssi_strength_plot(username, start_day, no_of_days, most_common, time_bin, no_of_days*plot_interval)

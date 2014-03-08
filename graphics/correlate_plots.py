@@ -25,6 +25,7 @@ def launch_plots(user_file,start_day,days_to_consider, time_bin, time_window, n_
     user_data = user_data_handler.retrieve_data_from_user(user_file,start_day,days_to_consider)
     data_start_time = user_data[0][1]
     data_end_time = user_data[len(user_data)-1][1]
+    print("FOUND TIME CONSTRAINS ",data_start_time,data_end_time)
 
     most_common_bssids = user_data_handler.get_most_common_bssids(user_data, m_most_popular_bssids)
     # find out most popular max_in_legend bssids (the ones who will be put in the plot legend)
@@ -59,6 +60,7 @@ def launch_plots(user_file,start_day,days_to_consider, time_bin, time_window, n_
 
 
     """ Plotting bssid samples as histograms"""
+    print("Plot - samples")
 
     # get number of samples based on info we have on bssids (for time_bin)
     bssid_samples_dict = user_data_handler.get_bssid_sample_frequency_over_time_bin_all(bssid_info_bars, time_bin, data_start_time, user_data)
@@ -77,6 +79,7 @@ def launch_plots(user_file,start_day,days_to_consider, time_bin, time_window, n_
     fig_list_samples = bssids_samples_time_plot.plot_bssid_samples_over_time(user_data, bssid_samples_dict, colors_dict, user_file, days_to_consider,plot_time_interval,data_start_time,data_end_time)
     
     """ Plotting average signal strengths as histograms"""
+    print("Plot - average signal")
     # get averages dictionary
     bssid_avg_dict = user_data_handler.get_bssid_values_for_rssis_per_time_bins(user_data, bssid_info_bars, time_bin)
     
@@ -85,26 +88,29 @@ def launch_plots(user_file,start_day,days_to_consider, time_bin, time_window, n_
 
     """ Plotting running average as plot with symbols"""
     # 2 mins
+    print("Plot - running average - 2 mins")
     running_avg_dict = user_data_handler.get_running_rssi_average_for_time_window(user_data, bssid_info_bars, time_window)
     fig_list_run_avg = bssids_rssi_running_avg_time_plot.plot_bssid_rssi_avg_over_time(user_data, running_avg_dict, color_codes, user_file, days_to_consider, plot_time_interval,option,time_window, data_start_time, data_end_time)
 
     # 5 mins
+    print("Plot - running average - 5 mins")
     running_avg_dict = user_data_handler.get_running_rssi_average_for_time_window(user_data, bssid_info_bars, 5)
     fig_list_run_avg_5 = bssids_rssi_running_avg_time_plot.plot_bssid_rssi_avg_over_time(user_data, running_avg_dict, color_codes, user_file, days_to_consider, plot_time_interval,option,5, data_start_time, data_end_time)
 
     # 10 mins
+    print("Plot - running average - 10 mins")
     running_avg_dict = user_data_handler.get_running_rssi_average_for_time_window(user_data, bssid_info_bars, 10)
     fig_list_run_avg_10 = bssids_rssi_running_avg_time_plot.plot_bssid_rssi_avg_over_time(user_data, running_avg_dict, color_codes, user_file, days_to_consider, plot_time_interval,option,10, data_start_time, data_end_time)
 
     return fig_sig_strength, fig_list_samples, fig_list_avg, fig_list_run_avg, fig_list_run_avg_5,fig_list_run_avg_10
     
-for i in range(1,2):
+for i in range(15,16):
     username = "user_"+str(i)+"_sorted"
     directory = "../../plots/"+username+"/"
     if not os.path.exists(directory):
         os.makedirs(directory)
-    fig_sig_strength, fig_list_samples, fig_list_avg, fig_list_run_avg, fig_list_run_avg_5,fig_list_run_avg_10 = launch_plots(username, 0, 1, 5, 2, -1, -1, 10, 60, 1)
-    
+    days_count = 3
+    fig_sig_strength, fig_list_samples, fig_list_avg, fig_list_run_avg, fig_list_run_avg_5,fig_list_run_avg_10 = launch_plots(username, 0, 3, 5, 2, -1, -1, 10, days_count*60, 1)
     if len(fig_list_avg) != len(fig_list_samples):
         print("ERROR: Not the same number of figures with samples and with averages")
         break
@@ -119,7 +125,7 @@ for i in range(1,2):
         break    
         
     for i in range(0,len(fig_list_samples)):
-        pp = PdfPages(directory+"complete_on_bssid"+str(fig_list_samples[i][1])+".pdf")
+        pp = PdfPages(directory+"complete_on_bssid"+str(fig_list_samples[i][1])+"_for_"+str(days_count)+".pdf")
         pp.savefig(fig_sig_strength)
         pp.savefig(fig_list_samples[i][0])
         pp.savefig(fig_list_avg[i][0])
@@ -127,3 +133,10 @@ for i in range(1,2):
         pp.savefig(fig_list_run_avg_5[i][0])
         pp.savefig(fig_list_run_avg_10[i][0])
         pp.close() 
+    for i in range(0,len(fig_list_samples)):
+        fig_list_samples[i][0].clear()
+        fig_list_avg[i][0].clear()
+        fig_list_run_avg[i][0].clear()
+        fig_list_run_avg_5[i][0].clear()
+        fig_list_run_avg_10[i][0].clear()
+    fig_sig_strength.clear()

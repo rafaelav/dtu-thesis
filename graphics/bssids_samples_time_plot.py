@@ -82,13 +82,13 @@ def plot_bssid_samples_over_time(full_data, bssid_samples_dict, colors_dict, use
         fig.clear()
         fig.set_size_inches(15,5)    
         
-        print(bssid)
-        print(values)
+        #print(bssid)
+        #print(values)
         
         width = 200
-        print(start_time,end_time)
+        #print(start_time,end_time)
         no_of_ticks = (end_time - start_time)/(time_bins_len*NO_SECS_PER_MIN) + 1
-        print(no_of_ticks)
+        #print(no_of_ticks)
         ticks, labels_utc = get_xticks_xlabels_from_time(start_time, end_time, no_of_ticks, time_bins_len)#(dates_epoch, no_of_ticks)
         
         plt.bar(dates_epoch, values, width, color=colors_dict[bssid])
