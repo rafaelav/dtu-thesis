@@ -53,7 +53,7 @@ def get_bssid_presence_matrix(username, full_data, bssid_dict, time_bin):
     #used as column name
     column_elements = get_start_of_time_bins(full_data[0][1],full_data[len(full_data)-1][1],time_bin)
     #print(column_elements)
-    
+    #print("Bssids considered for constructing matrix:",len(bssid_dict.keys()))
     #key is bssid and values is list of 0 and 1 (1 means that the bssid appears in the time bin of the spefici position in list 
     presence_on_rows = dict()
     
@@ -118,11 +118,14 @@ def plot_data(start_time, end_time, plot_time_interval, presence_on_rows, column
         values_list.append(crt)
         bssids_list.append(bssid)
         crt = crt + increment
+    # add a bit more space before end of y axis
+    values_list.append(crt)
+    bssids_list.append("")
     
     fig = plt.figure()
     fig.clear()
     fig.set_size_inches(25,10)        
-    for bssid in bssids_list:
+    for bssid in bssids_list[:-1]:
         #print("Something",presence_on_rows[bssid])
         marks_list = presence_on_rows[bssid]
         for i in range(0,len(presence_on_rows[bssid])):
@@ -145,27 +148,25 @@ def plot_data(start_time, end_time, plot_time_interval, presence_on_rows, column
     
     fig.savefig("../../plots/"+username+"/"+username+"_"+str(days_to_consider)+"days_no_rssi_plot.png")
 def bssid_without_rssi_strength_plot(user_file, start_day, days_to_consider, m_most_popular_bssids, time_bin, plot_time_interval):
+    ### Prepare and calculate pickled matrix for m_most_popolar
     # prepare needed data
     user_data, bssid_times_and_rssis_dict, color_dict = prepare_data_for_bssid_without_rssi_strength(user_file, start_day, days_to_consider, m_most_popular_bssids)
-    #print(user_data)
-    #print(bssid_times_and_rssis_dict)
-    
     # get matrix
     presence_on_rows, column_elements =  get_bssid_presence_matrix(user_file, user_data, bssid_times_and_rssis_dict, time_bin)
-    
+    print("Number of bssids in matrix:",len(presence_on_rows.keys()))
     print("Need to pickle")
-    pickle.dump(presence_on_rows, open("../../plots/"+username+"/"+"pickled_matrix_"+username+"_"+str(days_to_consider)+"days.p", "wb"))
+    if m_most_popular_bssids == -1:
+        pickle.dump(presence_on_rows, open("../../plots/"+username+"/"+"pickled_matrix_all_"+username+"_"+str(days_to_consider)+"days.p", "wb"))
+    else:
+        pickle.dump(presence_on_rows, open("../../plots/"+username+"/"+"pickled_matrix_best"+str(m_most_popular_bssids)+"_"+username+"_"+str(days_to_consider)+"days.p", "wb"))
     print("Pickled")
     
-    if m_most_popular_bssids == -1:
+    ### Prepare data for plotting (only <= 50 are ploted)
+    if m_most_popular_bssids == -1 or m_most_popular_bssids>50:
         # limit on plot (how many to see)
         limit = 50
         user_data, bssid_times_and_rssis_dict, color_dict = prepare_data_for_bssid_without_rssi_strength(user_file, start_day, days_to_consider, limit)
         presence_on_rows, column_elements =  get_bssid_presence_matrix(user_file, user_data, bssid_times_and_rssis_dict, time_bin)
-    
-    #print(column_elements)
-    #for bssid in presence_on_rows.keys():
-    #    print(str(bssid),presence_on_rows[bssid])
     
     start_time = user_data[0][1]
     end_time = user_data[len(user_data)-1][1]

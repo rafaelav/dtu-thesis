@@ -5,6 +5,7 @@ Created on Mar 15, 2014
 '''
 import pickle
 import networkx as nx
+import matplotlib.pyplot as plt
 
 def load_pickled_matrix(filename):
     pickled_data = pickle.load(open(filename, "rb" ))
@@ -29,7 +30,7 @@ def normalize_correlated_appearances(presence_matrix, correlated_appearance_coun
         presence_v = presence_count[v]
         # normalizing by dividing to the maximum number of possible times they could have appeared together
         correlated_appearance_count[(u,v)] = correlated_appearance_count[(u,v)]/(max(presence_u,presence_v)+0.0)
-    print(correlated_appearance_count)
+    #print(correlated_appearance_count)
     return correlated_appearance_count 
 
 def remove_week_correlations(G, correlated_appearance_count, treshold):
@@ -55,6 +56,7 @@ def create_correlation_graph(presence_matrix):
     bssids = presence_matrix.keys()
     G = nx.Graph()
     # add all nodes (bssid labels)
+    print("Bssids in graph: ",len(bssids))
     G.add_nodes_from(bssids)
     # count the number of times when 2 nodes have appeared at the same time (for each nodes)
     correlated_appearance_count = dict() # {(node1, node2): no_of_times_they_appeared_in_same_time_bin)..}
@@ -83,17 +85,88 @@ def create_correlation_graph(presence_matrix):
                     correlated_appearance_count[(node_u,node_v)] = 1
     return G, correlated_appearance_count                 
     
+# satckoverflow - stackoverflow.com/questions/17381006/large-graph-visualization-with-python-and-networkx
+"""def save_graph(graph,file_name):
+    #initialze Figure
+    plt.figure(num=None, figsize=(20, 20), dpi=1000)
+    plt.axis('off')
+    fig = plt.figure(1)
+    pos = nx.spring_layout(graph)
+    nx.draw_networkx_nodes(graph,pos)
+    nx.draw_networkx_edges(graph,pos)
+    nx.draw_networkx_labels(graph,pos)
+
+    cut = 1.00
+    xmax = cut * max(xx for xx, yy in pos.values())
+    ymax = cut * max(yy for xx, yy in pos.values())
+    plt.xlim(0, xmax)
+    plt.ylim(0, ymax)
+
+    plt.savefig(file_name,bbox_inches="tight")
+    plt.close()
+    del fig
+"""
+def draw_graph(G, filename, labels=None, graph_layout='shell',
+               node_size=150, node_color='blue', node_alpha=0.3,
+               node_text_size=6,
+               edge_color='blue', edge_alpha=0.3, edge_tickness=1,
+               edge_text_pos=0.3,
+               text_font='sans-serif'):
+
+    # these are different layouts for the network you may try
+    # shell seems to work best
+    if graph_layout == 'spring':
+        graph_pos=nx.spring_layout(G)
+    elif graph_layout == 'spectral':
+        graph_pos=nx.spectral_layout(G)
+    elif graph_layout == 'random':
+        graph_pos=nx.random_layout(G)
+    else:
+        graph_pos=nx.shell_layout(G)
+
+    # draw graph
+    nx.draw_networkx_nodes(G,graph_pos,node_size=node_size, 
+                           alpha=node_alpha, node_color=node_color)
+    nx.draw_networkx_edges(G,graph_pos,width=edge_tickness,
+                           alpha=edge_alpha,edge_color=edge_color)
+    nx.draw_networkx_labels(G, graph_pos,font_size=node_text_size,
+                            font_family=text_font)
+
+    """if labels is None:
+        labels = range(len(graph))
+
+    edge_labels = dict(zip(graph, labels))
+    nx.draw_networkx_edge_labels(G, graph_pos, edge_labels=edge_labels, 
+                                 label_pos=edge_text_pos)"""
+
+    # show graph
+    plt.axis('off')
+    plt.savefig(filename)
     
 base = "../../plots/"
 days_to_consider = 2
-treshold = 0.1
+treshold = 0.2
 
 for i in range (6,7):
     username = "user_"+str(i)+"_sorted"
+    fig_filename = base+username+"/"+"locations_graph_"+str(days_to_consider)+"days.pdf"
+    matrix_file = base+username+"/"+"pickled_matrix_all_"+username+"_"+str(days_to_consider)+"days.p"
+    gephi_file = base+username+"/"+"gephi_"+username+"_"+str(days_to_consider)+"days.gexf"
+    connected_components_file = base+username+"/"+"list_connected_"+username+"_"+str(days_to_consider)+"days.txt"
+    clique_components_file = base+username+"/"+"list_cliques_"+username+"_"+str(days_to_consider)+"days.txt"
     # load the presence matrix for signals for all bssid in 5 min time bins
-    presence_matrix = load_pickled_matrix(base+username+"/"+"pickled_matrix_"+username+"_"+str(days_to_consider)+"days.p")
+    presence_matrix = load_pickled_matrix(matrix_file)
     G, correlated_appearance_count = create_correlation_graph(presence_matrix)
     correlated_appearance_count = normalize_correlated_appearances(presence_matrix, correlated_appearance_count)
     G,new_correlated_appearance_count = remove_week_correlations(G, correlated_appearance_count, treshold)
-    
-    print(nx.number_strongly_connected_components(G))
+    #save_graph(G,base+username+"/"+"locations_graph_"+str(days_to_consider)+"days.pdf")
+    #draw_graph(G, fig_filename, graph_layout='random')
+    nx.write_gexf(G,gephi_file)
+    """print("Draw 1")
+    nx.draw_random(G)
+    plt.savefig(base+username+"/"+"draw_random.pdf")
+    plt.close()    """
+    print("Number of connected comp: "+str(len(nx.strongly_connected_components(G))))
+    pickle.dump(nx.strongly_connected_components(G), open(connected_components_file, "wb"))
+    print("Number of clique comp: "+str(len(list(nx.find_cliques(G)))))
+    pickle.dump(list(nx.find_cliques(G)), open(clique_components_file, "wb"))
