@@ -33,12 +33,21 @@ def normalize_correlated_appearances(presence_matrix, correlated_appearance_coun
     return correlated_appearance_count 
 
 def remove_week_correlations(G, correlated_appearance_count, treshold):
+    to_remove_list = []
     for (u,v) in correlated_appearance_count.keys():
         if correlated_appearance_count[(u,v)] < treshold:
             # remove edge and correlation_appearance_count key
-            G.delete_edge(u,v)
-            #TODO key rem
+            G.remove_edge(u,v)
+            to_remove_list.append((u,v))
+
+    new_correlation_appearacne_count = dict()
+    
+    for (u,v) in correlated_appearance_count.keys():
+        if (u,v) not in to_remove_list:
+            new_correlation_appearacne_count[(u,v)] = correlated_appearance_count[(u,v)]
             
+    return G,new_correlation_appearacne_count        
+
 #def identify_strongly_conex_components(G):
 
 def create_correlation_graph(presence_matrix):
@@ -77,9 +86,14 @@ def create_correlation_graph(presence_matrix):
     
 base = "../../plots/"
 days_to_consider = 2
+treshold = 0.1
+
 for i in range (6,7):
     username = "user_"+str(i)+"_sorted"
     # load the presence matrix for signals for all bssid in 5 min time bins
     presence_matrix = load_pickled_matrix(base+username+"/"+"pickled_matrix_"+username+"_"+str(days_to_consider)+"days.p")
     G, correlated_appearance_count = create_correlation_graph(presence_matrix)
-    normalize_correlated_appearances(presence_matrix, correlated_appearance_count)
+    correlated_appearance_count = normalize_correlated_appearances(presence_matrix, correlated_appearance_count)
+    G,new_correlated_appearance_count = remove_week_correlations(G, correlated_appearance_count, treshold)
+    
+    print(nx.number_strongly_connected_components(G))

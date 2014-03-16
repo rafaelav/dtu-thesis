@@ -22,7 +22,9 @@ def launch_plots(user_file,start_day,days_to_consider, time_bin, time_window, n_
     info about time appears on x axis, option = avg over number of element of max number possible (1 for no of elemnets, 2 for max possible)""" 
     """ Common data """
     # get data from file
+    print("Retrieve data from "+user_file)
     user_data = user_data_handler.retrieve_data_from_user(user_file,start_day,days_to_consider)
+    print("Retrieved data")
     data_start_time = user_data[0][1]
     data_end_time = user_data[len(user_data)-1][1]
     print("FOUND TIME CONSTRAINS ",data_start_time,data_end_time)
@@ -104,13 +106,13 @@ def launch_plots(user_file,start_day,days_to_consider, time_bin, time_window, n_
 
     return fig_sig_strength, fig_list_samples, fig_list_avg, fig_list_run_avg, fig_list_run_avg_5,fig_list_run_avg_10
     
-for i in range(15,16):
+for i in range(6,7):
     username = "user_"+str(i)+"_sorted"
     directory = "../../plots/"+username+"/"
     if not os.path.exists(directory):
         os.makedirs(directory)
-    days_count = 3
-    fig_sig_strength, fig_list_samples, fig_list_avg, fig_list_run_avg, fig_list_run_avg_5,fig_list_run_avg_10 = launch_plots(username, 0, 3, 5, 2, -1, -1, 10, days_count*60, 1)
+    days_count = 2
+    fig_sig_strength, fig_list_samples, fig_list_avg, fig_list_run_avg, fig_list_run_avg_5,fig_list_run_avg_10 = launch_plots(username, 0, days_count, 5, 2, -1, -1, 10, days_count*60, 1)
     if len(fig_list_avg) != len(fig_list_samples):
         print("ERROR: Not the same number of figures with samples and with averages")
         break

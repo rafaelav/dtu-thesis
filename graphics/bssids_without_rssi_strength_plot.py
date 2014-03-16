@@ -109,23 +109,27 @@ def plot_data(start_time, end_time, plot_time_interval, presence_on_rows, column
     values_list = []
     bssids_list = []
     crt = 1
+    
+    nr_of_bssids = len(presence_on_rows.keys())
+    line_width_in_plot = 10 * 20.0 / nr_of_bssids
+    increment = nr_of_bssids / 20.0
     for bssid in presence_on_rows.keys():
         values_for_bssids[bssid] = crt
         values_list.append(crt)
         bssids_list.append(bssid)
-        crt = crt + 1
+        crt = crt + increment
     
     fig = plt.figure()
     fig.clear()
-    fig.set_size_inches(15,5)        
+    fig.set_size_inches(25,10)        
     for bssid in bssids_list:
         #print("Something",presence_on_rows[bssid])
         marks_list = presence_on_rows[bssid]
         for i in range(0,len(presence_on_rows[bssid])):
             if marks_list[i] == 1:
-                plt.plot([column_elements[i],column_elements[i]+time_bin*SECS_IN_MINUTE - 1], [values_for_bssids[bssid],values_for_bssids[bssid]], '-',linewidth=10, color=color_dict[bssid])
+                plt.plot([column_elements[i],column_elements[i]+time_bin*SECS_IN_MINUTE - 1], [values_for_bssids[bssid],values_for_bssids[bssid]], '-',linewidth=line_width_in_plot, color=color_dict[bssid])
             else:
-                plt.plot([column_elements[i],column_elements[i]+time_bin*SECS_IN_MINUTE - 1], [values_for_bssids[bssid],values_for_bssids[bssid]], '-',linewidth=10, color="white")
+                plt.plot([column_elements[i],column_elements[i]+time_bin*SECS_IN_MINUTE - 1], [values_for_bssids[bssid],values_for_bssids[bssid]], '-',linewidth=line_width_in_plot, color="white")
 
     plt.ylim(0,len(bssids_list)+1)
     plt.title("Access points without signal strength ("+str(time_bin)+" mins) for bssid "+str(bssid)+" Plot over (days): "+str(days_to_consider)+" User: "+username)
@@ -154,6 +158,7 @@ def bssid_without_rssi_strength_plot(user_file, start_day, days_to_consider, m_m
     print("Pickled")
     
     if m_most_popular_bssids == -1:
+        # limit on plot (how many to see)
         limit = 50
         user_data, bssid_times_and_rssis_dict, color_dict = prepare_data_for_bssid_without_rssi_strength(user_file, start_day, days_to_consider, limit)
         presence_on_rows, column_elements =  get_bssid_presence_matrix(user_file, user_data, bssid_times_and_rssis_dict, time_bin)
@@ -166,7 +171,7 @@ def bssid_without_rssi_strength_plot(user_file, start_day, days_to_consider, m_m
     end_time = user_data[len(user_data)-1][1]
     plot_data(start_time, end_time, plot_time_interval, presence_on_rows, column_elements, color_dict, time_bin, user_file, days_to_consider)
 
-for i in range(1,3):
+for i in range(6,7):
     print("For user "+str(i))
     username = "user_"+str(i)+"_sorted"
     start_day = 0

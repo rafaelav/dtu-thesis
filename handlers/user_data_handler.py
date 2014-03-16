@@ -118,6 +118,9 @@ def generate_color_codes_for_bssid(bssid_list):
 
 def not_noise(data):
     """ Returns true if the given data doesn't represent noise and false otherwise"""
+    if len(data) < 6:
+        return False
+    
     rssi = data[4]
     context = data[5]
         
