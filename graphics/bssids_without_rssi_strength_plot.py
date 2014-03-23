@@ -172,11 +172,11 @@ def bssid_without_rssi_strength_plot(user_file, start_day, days_to_consider, m_m
     end_time = user_data[len(user_data)-1][1]
     plot_data(start_time, end_time, plot_time_interval, presence_on_rows, column_elements, color_dict, time_bin, user_file, days_to_consider)
 
-for i in range(6,7):
+for i in range(1,2):
     print("For user "+str(i))
     username = "user_"+str(i)+"_sorted"
     start_day = 0
-    no_of_days = 2
+    no_of_days = 1
     most_common = -1
     time_bin = 5
     plot_interval = 60

@@ -85,27 +85,7 @@ def create_correlation_graph(presence_matrix):
                     correlated_appearance_count[(node_u,node_v)] = 1
     return G, correlated_appearance_count                 
     
-# satckoverflow - stackoverflow.com/questions/17381006/large-graph-visualization-with-python-and-networkx
-"""def save_graph(graph,file_name):
-    #initialze Figure
-    plt.figure(num=None, figsize=(20, 20), dpi=1000)
-    plt.axis('off')
-    fig = plt.figure(1)
-    pos = nx.spring_layout(graph)
-    nx.draw_networkx_nodes(graph,pos)
-    nx.draw_networkx_edges(graph,pos)
-    nx.draw_networkx_labels(graph,pos)
 
-    cut = 1.00
-    xmax = cut * max(xx for xx, yy in pos.values())
-    ymax = cut * max(yy for xx, yy in pos.values())
-    plt.xlim(0, xmax)
-    plt.ylim(0, ymax)
-
-    plt.savefig(file_name,bbox_inches="tight")
-    plt.close()
-    del fig
-"""
 def draw_graph(G, filename, labels=None, graph_layout='shell',
                node_size=150, node_color='blue', node_alpha=0.3,
                node_text_size=6,
@@ -132,25 +112,18 @@ def draw_graph(G, filename, labels=None, graph_layout='shell',
     nx.draw_networkx_labels(G, graph_pos,font_size=node_text_size,
                             font_family=text_font)
 
-    """if labels is None:
-        labels = range(len(graph))
-
-    edge_labels = dict(zip(graph, labels))
-    nx.draw_networkx_edge_labels(G, graph_pos, edge_labels=edge_labels, 
-                                 label_pos=edge_text_pos)"""
-
     # show graph
     plt.axis('off')
     plt.savefig(filename)
     
 base = "../../plots/"
 days_to_consider = 2
-treshold = 0.2
+treshold = 0.5
 
-for i in range (6,7):
+for i in range (1,2):
     username = "user_"+str(i)+"_sorted"
     fig_filename = base+username+"/"+"locations_graph_"+str(days_to_consider)+"days.pdf"
-    matrix_file = base+username+"/"+"pickled_matrix_all_"+username+"_"+str(days_to_consider)+"days.p"
+    matrix_file = base+username+"/"+"pickled_matrix_"+username+"_"+str(days_to_consider)+"days.p"
     gephi_file = base+username+"/"+"gephi_"+username+"_"+str(days_to_consider)+"days.gexf"
     connected_components_file = base+username+"/"+"list_connected_"+username+"_"+str(days_to_consider)+"days.txt"
     clique_components_file = base+username+"/"+"list_cliques_"+username+"_"+str(days_to_consider)+"days.txt"
