@@ -116,7 +116,7 @@ def draw_graph(G, filename, labels=None, graph_layout='shell',
     plt.axis('off')
     plt.savefig(filename)
     
-base = "../../plots/"
+"""base = "../../plots/"
 days_to_consider = 2
 treshold = 0.5
 
@@ -135,11 +135,7 @@ for i in range (1,2):
     #save_graph(G,base+username+"/"+"locations_graph_"+str(days_to_consider)+"days.pdf")
     #draw_graph(G, fig_filename, graph_layout='random')
     nx.write_gexf(G,gephi_file)
-    """print("Draw 1")
-    nx.draw_random(G)
-    plt.savefig(base+username+"/"+"draw_random.pdf")
-    plt.close()    """
     print("Number of connected comp: "+str(len(nx.strongly_connected_components(G))))
     pickle.dump(nx.strongly_connected_components(G), open(connected_components_file, "wb"))
     print("Number of clique comp: "+str(len(list(nx.find_cliques(G)))))
-    pickle.dump(list(nx.find_cliques(G)), open(clique_components_file, "wb"))
+    pickle.dump(list(nx.find_cliques(G)), open(clique_components_file, "wb"))"""

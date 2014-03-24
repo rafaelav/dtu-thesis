@@ -147,6 +147,7 @@ def plot_data(start_time, end_time, plot_time_interval, presence_on_rows, column
     plt.yticks(values_list, bssids_list)
     
     fig.savefig("../../plots/"+username+"/"+username+"_"+str(days_to_consider)+"days_no_rssi_plot.png")
+    return fig
 def bssid_without_rssi_strength_plot(user_file, start_day, days_to_consider, m_most_popular_bssids, time_bin, plot_time_interval):
     ### Prepare and calculate pickled matrix for m_most_popolar
     # prepare needed data
@@ -156,9 +157,9 @@ def bssid_without_rssi_strength_plot(user_file, start_day, days_to_consider, m_m
     print("Number of bssids in matrix:",len(presence_on_rows.keys()))
     print("Need to pickle")
     if m_most_popular_bssids == -1:
-        pickle.dump(presence_on_rows, open("../../plots/"+username+"/"+"pickled_matrix_all_"+username+"_"+str(days_to_consider)+"days.p", "wb"))
+        pickle.dump(presence_on_rows, open("../../plots/"+user_file+"/"+"pickled_matrix_all_"+user_file+"_"+str(days_to_consider)+"days.p", "wb"))
     else:
-        pickle.dump(presence_on_rows, open("../../plots/"+username+"/"+"pickled_matrix_best"+str(m_most_popular_bssids)+"_"+username+"_"+str(days_to_consider)+"days.p", "wb"))
+        pickle.dump(presence_on_rows, open("../../plots/"+user_file+"/"+"pickled_matrix_best"+str(m_most_popular_bssids)+"_"+user_file+"_"+str(days_to_consider)+"days.p", "wb"))
     print("Pickled")
     
     ### Prepare data for plotting (only <= 50 are ploted)
@@ -170,8 +171,9 @@ def bssid_without_rssi_strength_plot(user_file, start_day, days_to_consider, m_m
     
     start_time = user_data[0][1]
     end_time = user_data[len(user_data)-1][1]
-    plot_data(start_time, end_time, plot_time_interval, presence_on_rows, column_elements, color_dict, time_bin, user_file, days_to_consider)
-
+    fig = plot_data(start_time, end_time, plot_time_interval, presence_on_rows, column_elements, color_dict, time_bin, user_file, days_to_consider)
+    return fig
+"""
 for i in range(1,2):
     print("For user "+str(i))
     username = "user_"+str(i)+"_sorted"
@@ -180,4 +182,4 @@ for i in range(1,2):
     most_common = -1
     time_bin = 5
     plot_interval = 60
-    bssid_without_rssi_strength_plot(username, start_day, no_of_days, most_common, time_bin, no_of_days*plot_interval)
+    bssid_without_rssi_strength_plot(username, start_day, no_of_days, most_common, time_bin, no_of_days*plot_interval)"""

@@ -35,9 +35,8 @@ def create_matrix_for_hmm(presence_matrix):
     # matrix and the order considered for the bssids in the matrix
     return result_matrix, bssids
 
-base = "../../plots/"
+"""base = "../../plots/"
 days_to_consider = 2
-treshold = 0.5
 
 for i in range (1,2):
     username = "user_"+str(i)+"_sorted"
@@ -50,20 +49,6 @@ for i in range (1,2):
     print(len(bssids_order))
     print(len(matrix_with_bssids_on_columns))
     model2 = hmm.GaussianHMM(32) # up tp 25 without 23
-    """#x=["1,0", "1,5", "1,4", "10,1", "32,1", "1,3", "1,13"]
-    x=[0, 5, 4, 10, 32, 3, 13, 23, 2, 0, 7, 0, 4, 5, 46, 47]
-    c = [[0],[5],[4]]
-    y = [[1, 2, 1], [3, 4, 2], [1,1,0.175], [1,1,0.175]]
-    a=np.array(x)
-    a = np.array(y)
-    #a = np.atleast_2d(y)
-    print(a)
-    #b=a[:,np.newaxis]
-    #print(b)
-    model2.fit([a])
-    Z2 = model2.predict(a)
-    print(model2.score(a))
-    print(Z2)"""
     
     #print(matrix_with_bssids_on_columns)
     X = np.array(matrix_with_bssids_on_columns)
@@ -72,4 +57,4 @@ for i in range (1,2):
     #print(Y)
     model2.fit([X])
     Z2 = model2.predict(X)
-    print(Z2)
+    print(Z2)"""
