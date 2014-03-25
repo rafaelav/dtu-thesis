@@ -10,6 +10,7 @@ from graphics import locations_with_networks
 from graphics import bssids_without_rssi_strength_plot
 from handlers import user_data_handler
 import pickle
+from matplotlib.backends.backend_pdf import PdfPages
 from sklearn import hmm
 import numpy as np
 import networkx as nx
@@ -42,30 +43,35 @@ def get_xticks_xlabels_from_time(data_start_time, data_end_time, no_of_ticks, be
     dates_utc.append(get_utc_from_epoch(timestamp))
         
     return dates_epoch, dates_utc
-def plot_locations_from_hmm(list_locations_over_time_bins, days_to_consider, time_bin, username,colors_dict, start_time, end_time, plot_time_interval):
+def plot_locations_from_hmm(list_locations_over_time_bins,locations_count, days_to_consider, time_bin, username,colors_dict, start_time, end_time, plot_time_interval):
     print(len(list_locations_over_time_bins))
     
     fig = plt.figure()
     fig.clear()
-    fig.set_size_inches(25,10)        
+    fig.set_size_inches(25,5)        
     
-    crt = 0
+    crt = start_time
+    print(list_locations_over_time_bins)
     for loc in list_locations_over_time_bins:
-        plt.plot([crt,crt+time_bin*SECS_IN_MINUTE - 1], [2,2], '-',linewidth=30, color=colors_dict[loc])
+        plt.plot([crt,crt+time_bin*SECS_IN_MINUTE - 1], [0,0], '-',linewidth=200, color=colors_dict[loc])
         crt = crt+time_bin*SECS_IN_MINUTE - 1
 
-    plt.ylim(0, 3)
+    #plt.ylim(0)
     plt.title("Locations from HMM data. Plot over (days): "+str(days_to_consider)+" User: "+username)
     plt.xlabel("Locations in time", fontsize=10)
     
-    no_of_ticks = len(list_locations_over_time_bins)
+    no_of_ticks = (end_time - start_time)/(plot_time_interval*SECS_IN_MINUTE) + 1
     #print(plot_time_interval,no_of_ticks)
     ticks, labels_utc = get_xticks_xlabels_from_time(start_time, end_time, no_of_ticks, plot_time_interval)#(dates_epoch, no_of_ticks)
-        
+    
+    #print(ticks)
+    #print(labels_utc)
     plt.xticks(ticks, labels_utc, rotation = 90)
     plt.yticks([2], [""])
     
-    fig.savefig("../../plots/"+username+"/"+username+"_"+str(days_to_consider)+"days_hmm_locations_plot.png")    
+    fig.savefig("../../plots/"+username+"/"+username+"_"+str(days_to_consider)+"days_hmm_locations_("+str(locations_count)+")_plot.png")
+    return fig    
+
 def plot_locations_from_network(list_locations):
     print(len(list_locations))
         
@@ -148,20 +154,22 @@ start_day = 0
 most_common = -1
 time_bin = 5
 plot_interval = 60
-days_to_consider = 2
-user_list = [6]
+days_to_consider = 1
+user_list = [1,6]
 ########################################
-#presence_figures = generate_files_with_presence_matrixes(user_list, start_day, days_to_consider, most_common, time_bin, days_to_consider*plot_interval)
+presence_figures = generate_files_with_presence_matrixes(user_list, start_day, days_to_consider, most_common, time_bin, days_to_consider*plot_interval)
 #connected_components_count = generate_locations_based_on_networks(user_list, days_to_consider)
-#connected_components_count =dict()
-#connected_components_count[6]=35
+connected_components_count =dict()
+connected_components_count[1]=19
+connected_components_count[6]=19
 #location_transitions = generate_locations_based_on_hmm(user_list, connected_components_count, days_to_consider)
 
 # get locations from results of networks
 # get locations from results of hmm
-connected_components_count =dict()
-connected_components_count[1] = 32
-connected_components_count[6] = 35
+#connected_components_count =dict()
+#connected_components_count[1] = 32
+#connected_components_count[6] = 35
+figures_locations = dict()
 for user in user_list:
     username = "user_"+str(user)+"_sorted"
     filename = base+username+"/"+"transitions_"+username+"_"+str(connected_components_count[user])+"loc_"+str(days_to_consider)+"days.p"
@@ -175,4 +183,11 @@ for user in user_list:
     start_time = user_data[0][1]
     end_time = user_data[len(user_data)-1][1]    
     print("Plot HMM locations")
-    plot_locations_from_hmm(pickled_transitions, days_to_consider,time_bin, username,colors_dict,start_time, end_time, days_to_consider*plot_interval)
+    figures_locations[user] = plot_locations_from_hmm(pickled_transitions,connected_components_count[user], days_to_consider,time_bin, username,colors_dict,start_time, end_time, days_to_consider*plot_interval)
+
+for user in user_list:
+    username = "user_"+str(user)+"_sorted"
+    pp = PdfPages(base+username+"/"+"bssids_and_locations_("+str(connected_components_count[user])+")"+username+"_for_"+str(days_to_consider)+".pdf")
+    pp.savefig(presence_figures[user])
+    pp.savefig(figures_locations[user])
+    pp.close()
