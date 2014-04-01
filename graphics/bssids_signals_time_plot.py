@@ -18,6 +18,9 @@ TIME_BEFORE_INTERRUPT = 60*2 # 2 mins
 
 week   = {0:'Mon', 1:'Tue', 2:'Wed', 3:'Thu',  4:'Fri', 5:'Sat', 6:'Sun'}
 
+# Plot the signals over time with signal strength (connecting dot presence with lines as long as
+# there is not more than TIME_BEFORE_INTERRUPT between the dots 
+
 def get_utc_from_epoch(epoch_time):
     date_val = datetime.datetime.utcfromtimestamp(int(epoch_time))
     return week[date_val.weekday()]+"\n"+str(date_val.hour)+":"+str(date_val.minute)

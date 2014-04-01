@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 NO_SECS_PER_MIN = 60
 MAX_INTERRUPT = 2 # 2 mins
 week   = {0:'Mon', 1:'Tue', 2:'Wed', 3:'Thu',  4:'Fri', 5:'Sat', 6:'Sun'}
-
+# Running average for various time windows for each bssid
+# running average is calcualted as : 
 def get_utc_from_epoch(epoch_time):
     date_val = datetime.datetime.utcfromtimestamp(int(epoch_time))
     return week[date_val.weekday()]+"\n"+str(date_val.hour)+":"+str(date_val.minute)
@@ -120,6 +121,6 @@ def plot_bssid_rssi_avg_over_time(full_data, running_avg_dict, colors_dict, user
         plt.title("Running average signal per time window ("+str(time_window)+" mins) for bssid "+str(bssid)+" Plot over (days): "+str(days_to_consider)+" User: "+username)
         plt.xlabel("Time bins", fontsize=10)
         plt.ylabel("Average value", fontsize=10)        
-        fig.savefig("../../plots/"+username+"/"+username+"_"+str(days_to_consider)+"days_plot"+"_"+str(bssid)+"_avg_sig.png")
+        fig.savefig("../../plots/"+username+"/"+username+"_"+str(days_to_consider)+"days_plot"+"_"+str(bssid)+"_rn_avg_sig.png")
         fig_list.append((fig,bssid))
     return fig_list

@@ -11,6 +11,7 @@ NO_SECS_PER_MIN = 60
 MAX_INTERRUPT = 2
 week   = {0:'Mon', 1:'Tue', 2:'Wed', 3:'Thu',  4:'Fri', 5:'Sat', 6:'Sun'}
 
+# plot average value of signal strength (rssi) over a time bin (5 mins) for each bssid
 def get_utc_from_epoch(epoch_time):
     date_val = datetime.datetime.utcfromtimestamp(int(epoch_time))
     return week[date_val.weekday()]+"\n"+str(date_val.hour)+":"+str(date_val.minute)
