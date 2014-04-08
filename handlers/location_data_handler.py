@@ -186,6 +186,7 @@ def get_locations_for_training(scrambled_locations_for_full, scrambled_data, K, 
     
 def predict_locations_for_test_data(training_data, test_data, list_locations_for_training, loc_count):
     list_locations_for_test = []
+
     # for each test element 
     for test_elem in test_data:
         similarity_to_location = dict()
@@ -194,8 +195,6 @@ def predict_locations_for_test_data(training_data, test_data, list_locations_for
             if i not in similarity_to_location.keys():
                 similarity_to_location[i] = 0.0        
         
-        print(test_elem)
-        print(similarity_to_location)
         crt = 0
         
         # for each element in the training set
@@ -204,42 +203,59 @@ def predict_locations_for_test_data(training_data, test_data, list_locations_for
             sim = get_similarity(test_elem, training_elem)
             similarity_to_location[list_locations_for_training[crt]] = similarity_to_location[list_locations_for_training[crt]] + sim
             crt = crt + 1
+#             print(test_elem,training_elem,sim)
 
-        print(similarity_to_location)        
+        #normalize similarity (value should be divided to the number of elements that have contributed to it
+        contributors = dict()
+        for i in range(0,loc_count):
+            contributors[i] = 0.0
+
+        for i in range(0,len(training_data)):
+            contributors[list_locations_for_training[i]] = contributors[list_locations_for_training[i]] + 1
+#         print(list_locations_for_training)
+        
+#         print("Similarity before: ",similarity_to_location)
+#         print("Contributors: ",contributors)
+        for crt in range(0,loc_count):
+            if crt in similarity_to_location.keys():
+                similarity_to_location[crt] = similarity_to_location[crt]/contributors[crt] 
+#         print("Similarity after: ",similarity_to_location)    
+#         print(similarity_to_location)        
         probable_location_for_test_elem = list_locations_for_training[0]
         for key in similarity_to_location.keys():
             if similarity_to_location[key] < similarity_to_location[probable_location_for_test_elem]:
                 probable_location_for_test_elem = key
         
+#         print(test_elem, probable_location_for_test_elem)
         list_locations_for_test.append(probable_location_for_test_elem)
     return list_locations_for_test
 
 def randomize_order(data, list_locations_for_full):
     """ Used for randomizing the order of the data in order to be able to randomly chose the k sub samples"""
-    print("Randomizing order: order-scrambled, data-scrambled, locations-scrambled")
+#     print("Randomizing order: order-scrambled, data-scrambled, locations-scrambled")
     # construct list with elements order
     scrambled_order = []
     for i in range(0,len(data)):
         scrambled_order.append(i)
-    print(scrambled_order)
+#     print(scrambled_order)
     
     # scramble order of elements
     random.shuffle(scrambled_order)
-    print(scrambled_order)
+#     print(scrambled_order)
     
     # construct new data list with its elements scrambled according to scramble_order
     scrambled_data = []
     for x in scrambled_order:
         scrambled_data.append(data[x])
-    print(data)
-    print(scrambled_data)
+#     print(data)
+#     print(scrambled_data)
     
     # construct new expected locations list with elements scrambled accordingly so that they still mach the data
     scrambled_locations = []
     for x in scrambled_order:
         scrambled_locations.append(list_locations_for_full[x])
-    print(list_locations_for_full)
-    print(scrambled_locations)
+#     print(list_locations_for_full)
+#     print(scrambled_locations)
     
     return scrambled_data, scrambled_locations, scrambled_order
 
@@ -256,44 +272,50 @@ def unscramble_order(scrambled_data, scrambled_predicted_locations, scrambled_or
         unscrambled_data[scrambled_order[i]] = scrambled_data[i]
         unscrambled_locations[scrambled_order[i]] = scrambled_predicted_locations[i]
     
-    print("Unscrambled: data, locations(predicted for all)")
-    print(unscrambled_data)
-    print(unscrambled_locations)
+#     print("Unscrambled: data, locations(predicted for all)")
+#     print(unscrambled_data)
+#     print(unscrambled_locations)
     return unscrambled_data, unscrambled_locations
 
 def estimate_locations_k_fold_cross_validation(K, data, min_loc, max_loc):
     # Gets K folding factor and the min_locations and max_locations to consider. Returns best estimated
     # number of locations that can represent the data
     print(K)
+    
     full_predictions_accuracy = dict() # keeps how accurate was the estimation for each considered no of locations
     
-    for loc_count in range(min_loc, max_loc+1):
+    for loc_count in range(min_loc, max_loc+1):            
         print("Locations considered: ",loc_count)
         locations_for_full = state_transitions(data, loc_count)
         list_locations_for_full = np.array(locations_for_full).tolist()
+
         list_scrambled_full_prediction = []
         scrambled_data, scrambled_locations_for_full, scrambled_order = randomize_order(data, list_locations_for_full)
-
+    
         for i in range(0,K):
             test_data = get_test_data(scrambled_data, K, i)
             training_data = get_training_data(scrambled_data, K, i)
             list_scrambled_locations_for_training = get_locations_for_training(scrambled_locations_for_full, scrambled_data, K, i)
-            
+                
             # convert locations for training to array, but keep a list copy
             #locations_for_training = np.asarray(list_scrambled_locations_for_training)
-            
-            print("Sample "+str(i)+" is test data")
-            print("Scrambled training data and locations associated")
-            print(training_data)
-            print(list_scrambled_locations_for_training)
-            print("Scrambled test data")
-            print(test_data)
-            #print("Data, training, test size: ",len(data),len(training_data),len(test_data))
-
-#            print("[Locations] Training",list_locations_for_training)
+                
+#             print("Sample "+str(i)+" is test data")
+#             print("Scrambled data, scrambled calculated locations, scrambled predicted locations associated")
+#             print(scrambled_data)
+#             print(scrambled_locations_for_full)
+#             print("Scrambled training data and locations associated")
+#             print(training_data)
+#             print(list_scrambled_locations_for_training)
+#             print("Scrambled test data")
+#             print(test_data)
+#             print("Data, training, test size: ",len(data),len(training_data),len(test_data))
+    
+            # print("[Locations] Training",list_locations_for_training)
             list_scrambled_predicted_locations_for_test = predict_locations_for_test_data(training_data, test_data, list_scrambled_locations_for_training, loc_count)
-#            print("[Locations] Test",list_predicted_locations_for_test)
+            # print("[Locations] Test",list_predicted_locations_for_test)
             list_scrambled_full_prediction = list_scrambled_full_prediction + list_scrambled_predicted_locations_for_test
+#             print(list_scrambled_full_prediction)
         
         unscrambled_data, list_full_prediction = unscramble_order(scrambled_data, list_scrambled_full_prediction, scrambled_order)
         print("Unscrambled locations: calculated and predicted for "+str(loc_count)+" locations") 
@@ -311,53 +333,6 @@ def estimate_locations_k_fold_cross_validation(K, data, min_loc, max_loc):
         # if the estimation is equally good for more locations, we consider the most we can have
         elif full_predictions_accuracy[key] == full_predictions_accuracy[best_no_locations_estimated] and best_no_locations_estimated < key:
             best_no_locations_estimated = key
+    print("Prediction accuracy for considered number of hidden states")
     print(full_predictions_accuracy)
     return best_no_locations_estimated
-
-"""def estimate_locations_k_fold_cross_validation(K, data, min_loc, max_loc):
-    # Gets K folding factor and the min_locations and max_locations to consider. Returns best estimated
-    # number of locations that can represent the data
-    print(K)
-    full_predictions_accuracy = dict() # keeps how accurate was the estimation for each considered no of locations
-    for loc_count in range(min_loc, max_loc+1):
-        print("Locations considered: ",loc_count)
-        locations_for_full = state_transitions(data, loc_count)
-        list_locations_for_full = np.array(locations_for_full).tolist()
-        list_full_prediction = []
-        for i in range(0,K):
-            if i<K-1:
-                test_data = data[i*(len(data)/K):(i+1)*(len(data)/K)]
-            else:
-                test_data = data[i*(len(data)/K):]
-
-            #if i!=0:            
-            training_data = data[0:i*(len(data)/K)]
-            locations_for_training = list_locations_for_full[0:i*(len(data)/K)]
-
-            if i<K-1: 
-                training_data = training_data + data[(i+1)*(len(data)/K):]
-                locations_for_training = locations_for_training + list_locations_for_full[(i+1)*(len(data)/K):]
-            
-            # convert locations for training to array, but keep a list copy
-            list_locations_for_training = locations_for_training
-            locations_for_training = np.asarray(locations_for_training)
-            
-#            print(data)
-#            print(training_data)
-#            print(test_data)
-            #print("Data, training, test size: ",len(data),len(training_data),len(test_data))
-
-#            print("[Locations] Training",list_locations_for_training)
-            list_predicted_locations_for_test = predict_locations_for_test_data(training_data, test_data, list_locations_for_training, loc_count)
-#            print("[Locations] Test",list_predicted_locations_for_test)
-            list_full_prediction = list_full_prediction + list_predicted_locations_for_test
-        print("[Locations] Full",list_locations_for_full)
-        print("[Locations] Full prediction", list_full_prediction)
-        full_predictions_accuracy[loc_count] = get_accuracy(list_full_prediction, list_locations_for_full)
-    
-    best_no_locations_estimated = min_loc
-    for key in full_predictions_accuracy.keys():
-        if full_predictions_accuracy[key] < full_predictions_accuracy[best_no_locations_estimated]:
-            best_no_locations_estimated = key
-    print(full_predictions_accuracy)
-    return best_no_locations_estimated"""

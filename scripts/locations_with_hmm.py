@@ -29,7 +29,7 @@ presence_matrix = location_data_handler.load_pickled_file(pickled_matrix_file)
 # make presence matrix for hmm
 hmm_matrix, bssids = location_data_handler.create_matrix_for_hmm(presence_matrix)
 
-hmm_matrix = [[1,1,1,0,0,0],
+"""hmm_matrix = [[1,1,1,0,0,0],
 [1,1,1,0,0,0],
 [1,1,0,0,0,0],
 [0,0,0,1,1,1],
@@ -37,7 +37,7 @@ hmm_matrix = [[1,1,1,0,0,0],
 [0,0,0,1,1,1],
 [0,0,1,1,1,0],
 [0,0,1,1,1,0]]
-K=4
+K=4"""
 # determine locations estimation
-estimated_hidden_states = location_data_handler.estimate_locations_k_fold_cross_validation(K, hmm_matrix, 2, 4)
+estimated_hidden_states = location_data_handler.estimate_locations_k_fold_cross_validation(K, hmm_matrix, 3, 20)
 print(estimated_hidden_states)
