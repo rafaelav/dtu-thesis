@@ -8,7 +8,8 @@ sys.path.append( ".." )
 from graphics import locations_with_hmm
 from graphics import locations_with_networks 
 from graphics import bssids_without_rssi_strength_plot
-from handlers import user_data_handler
+from handlers import user_data_handler, location_data_handler
+from handlers import location_data_handler
 import pickle
 from matplotlib.backends.backend_pdf import PdfPages
 from sklearn import hmm
@@ -48,13 +49,17 @@ def plot_locations_from_hmm(list_locations_over_time_bins,locations_count, days_
     
     fig = plt.figure()
     fig.clear()
-    fig.set_size_inches(25,5)        
-    
+    fig.set_size_inches(25,5)       
+     
+    plt.xlim(start_time,end_time)
     crt = start_time
     print(list_locations_over_time_bins)
+    list_locations_over_time_bins = np.array(list_locations_over_time_bins).tolist()
+    print(list_locations_over_time_bins)
     for loc in list_locations_over_time_bins:
-        plt.plot([crt,crt+time_bin*SECS_IN_MINUTE - 1], [0,0], '-',linewidth=200, color=colors_dict[loc])
-        crt = crt+time_bin*SECS_IN_MINUTE - 1
+        print(loc, crt, crt+time_bin*SECS_IN_MINUTE - 1, colors_dict[loc])
+        plt.plot([crt,crt+time_bin*SECS_IN_MINUTE - 10], [0,0], '-',linewidth=50, color=colors_dict[loc])
+        crt = crt+time_bin*SECS_IN_MINUTE
 
     #plt.ylim(0)
     plt.title("Locations from HMM data. Plot over (days): "+str(days_to_consider)+" User: "+username)
@@ -68,6 +73,7 @@ def plot_locations_from_hmm(list_locations_over_time_bins,locations_count, days_
     #print(labels_utc)
     plt.xticks(ticks, labels_utc, rotation = 90)
     plt.yticks([2], [""])
+#     plt.show()
     
     fig.savefig("../../plots/"+username+"/"+username+"_"+str(days_to_consider)+"days_hmm_locations_("+str(locations_count)+")_plot.png")
     return fig    
@@ -148,19 +154,21 @@ def generate_locations_based_on_hmm(user_list, components_count, days_to_conside
         #write to file
         pickle.dump(Z, open(transition_file, "wb"))
     return location_transitions
+
 ######## Values initialization ########
 # for the plot without rssi
 start_day = 0
 most_common = -1
 time_bin = 5
 plot_interval = 60
-days_to_consider = 1
-user_list = [1,6]
+days_to_consider = 2
+user_list = [6]
+print(user_list)
 ########################################
-presence_figures = generate_files_with_presence_matrixes(user_list, start_day, days_to_consider, most_common, time_bin, days_to_consider*plot_interval)
+#presence_figures = generate_files_with_presence_matrixes(user_list, start_day, days_to_consider, most_common, time_bin, days_to_consider*plot_interval)
 #connected_components_count = generate_locations_based_on_networks(user_list, days_to_consider)
 connected_components_count =dict()
-connected_components_count[1]=19
+#connected_components_count[1]=19
 connected_components_count[6]=19
 #location_transitions = generate_locations_based_on_hmm(user_list, connected_components_count, days_to_consider)
 
@@ -172,12 +180,19 @@ connected_components_count[6]=19
 figures_locations = dict()
 for user in user_list:
     username = "user_"+str(user)+"_sorted"
-    filename = base+username+"/"+"transitions_"+username+"_"+str(connected_components_count[user])+"loc_"+str(days_to_consider)+"days.p"
+    #filename = base+username+"/"+"transitions_"+username+"_"+str(19)+"loc_"+str(days_to_consider)+"days.p"
+    filename = base+username+"/"+"pickled_matrix_all_"+username+"_"+str(days_to_consider)+"days.p"
     pickled_transitions = load_pickled_file(filename)
+    hmm_matrix, bssids = location_data_handler.create_matrix_for_hmm(pickled_transitions)
+    print("Created matrix and moving on to generating transitions")
+    pickled_transitions = location_data_handler.state_transitions(hmm_matrix, connected_components_count[user])
+    print(pickled_transitions)
+   
     locations = []
     for i in range(0,connected_components_count[user]):
         locations.append(i)
     colors_dict = user_data_handler.generate_color_codes_for_bssid(locations)
+    print(colors_dict)
     
     user_data = user_data_handler.retrieve_data_from_user(username,start_day,days_to_consider)
     start_time = user_data[0][1]
@@ -185,9 +200,9 @@ for user in user_list:
     print("Plot HMM locations")
     figures_locations[user] = plot_locations_from_hmm(pickled_transitions,connected_components_count[user], days_to_consider,time_bin, username,colors_dict,start_time, end_time, days_to_consider*plot_interval)
 
-for user in user_list:
+"""for user in user_list:
     username = "user_"+str(user)+"_sorted"
     pp = PdfPages(base+username+"/"+"bssids_and_locations_("+str(connected_components_count[user])+")"+username+"_for_"+str(days_to_consider)+".pdf")
     pp.savefig(presence_figures[user])
     pp.savefig(figures_locations[user])
-    pp.close()
+    pp.close()"""

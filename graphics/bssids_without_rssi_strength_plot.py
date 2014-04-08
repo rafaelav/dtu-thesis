@@ -124,7 +124,8 @@ def plot_data(start_time, end_time, plot_time_interval, presence_on_rows, column
     
     fig = plt.figure()
     fig.clear()
-    fig.set_size_inches(25,10)        
+    fig.set_size_inches(25,10)      
+    plt.xlim(start_time,end_time)  
     for bssid in bssids_list[:-1]:
         #print("Something",presence_on_rows[bssid])
         marks_list = presence_on_rows[bssid]
@@ -163,7 +164,7 @@ def bssid_without_rssi_strength_plot(user_file, start_day, days_to_consider, m_m
     print("Pickled")
     
     ### Prepare data for plotting (only <= 50 are ploted)
-    """if m_most_popular_bssids == -1 or m_most_popular_bssids>50:
+    if m_most_popular_bssids == -1 or m_most_popular_bssids>50:
         # limit on plot (how many to see)
         limit = 50
         user_data, bssid_times_and_rssis_dict, color_dict = prepare_data_for_bssid_without_rssi_strength(user_file, start_day, days_to_consider, limit)
@@ -172,14 +173,14 @@ def bssid_without_rssi_strength_plot(user_file, start_day, days_to_consider, m_m
     start_time = user_data[0][1]
     end_time = user_data[len(user_data)-1][1]
     fig = plot_data(start_time, end_time, plot_time_interval, presence_on_rows, column_elements, color_dict, time_bin, user_file, days_to_consider)
-    return fig"""
+    return fig
 
-for i in range(1,2):
+"""for i in range(6,7):
     print("For user "+str(i))
     username = "user_"+str(i)+"_sorted"
     start_day = 0
-    no_of_days = 7
+    no_of_days = 2
     most_common = -1
     time_bin = 5
     plot_interval = 60
-    bssid_without_rssi_strength_plot(username, start_day, no_of_days, most_common, time_bin, no_of_days*plot_interval)
+    bssid_without_rssi_strength_plot(username, start_day, no_of_days, most_common, time_bin, no_of_days*plot_interval)"""
