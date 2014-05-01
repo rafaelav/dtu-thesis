@@ -12,6 +12,7 @@ import pickle
 import math
 from sklearn import hmm
 import numpy as np
+from sklearn import cross_validation
 
 SECS_IN_MINUTE = 60
 
@@ -278,6 +279,8 @@ def unscramble_order(scrambled_data, scrambled_predicted_locations, scrambled_or
     return unscrambled_data, unscrambled_locations
 
 def estimate_locations_k_fold_cross_validation(K, data, min_loc, max_loc):
+    
+    """
     # Gets K folding factor and the min_locations and max_locations to consider. Returns best estimated
     # number of locations that can represent the data
     print(K)
@@ -336,3 +339,4 @@ def estimate_locations_k_fold_cross_validation(K, data, min_loc, max_loc):
     print("Prediction accuracy for considered number of hidden states")
     print(full_predictions_accuracy)
     return best_no_locations_estimated
+"""
