@@ -7,16 +7,74 @@ import sys
 sys.path.append( ".." )
 from handlers import user_data_handler
 
-import random
 import pickle
-import math
 from sklearn import hmm
 import numpy as np
 from sklearn import cross_validation
 from sklearn import svm
+import matplotlib.pyplot as plt
+import datetime
+week   = {0:'Mon', 1:'Tue', 2:'Wed', 3:'Thu',  4:'Fri', 5:'Sat', 6:'Sun'}
 
 
 SECS_IN_MINUTE = 60
+
+def get_utc_from_epoch(epoch_time):
+    date_val = datetime.datetime.utcfromtimestamp(int(epoch_time))
+    return week[date_val.weekday()]+"\n"+str(date_val.hour)+":"+str(date_val.minute)
+
+def get_xticks_xlabels_from_time(data_start_time, data_end_time, no_of_ticks, between_ticks):    
+    dates_epoch = []
+    dates_utc = []
+    time_to_add_epoch = data_start_time
+    
+    added = 0
+    while added < no_of_ticks:
+        timestamp = time_to_add_epoch
+        dates_epoch.append(timestamp)
+        dates_utc.append(get_utc_from_epoch(timestamp))
+        added = added + 1
+        time_to_add_epoch = between_ticks*SECS_IN_MINUTE + time_to_add_epoch    
+    
+    # last time stamp
+    timestamp = data_end_time
+    dates_epoch.append(timestamp)
+    dates_utc.append(get_utc_from_epoch(timestamp))
+        
+    return dates_epoch, dates_utc
+
+def plot_locations_from_hmm(list_locations_over_time_bins, days_to_consider, time_bin, username, colors_dict, start_time, end_time, plot_time_interval):
+    print("Time bins: ",len(list_locations_over_time_bins))
+    # get locations count
+    locations_count = 1 + max(np.array(list_locations_over_time_bins).tolist())
+    print("Locations identified: ",locations_count)
+    
+    fig = plt.figure()
+    fig.clear()
+    fig.set_size_inches(25,5)       
+     
+    plt.xlim(start_time,end_time)
+    crt = start_time
+    print(list_locations_over_time_bins)
+    list_locations_over_time_bins = np.array(list_locations_over_time_bins).tolist()
+    #print(list_locations_over_time_bins)
+    for loc in list_locations_over_time_bins:
+        #print(loc, crt, crt+time_bin*SECS_IN_MINUTE - 1, colors_dict[loc])
+        plt.plot([crt,crt+time_bin*SECS_IN_MINUTE - 1], [0,0], '-',linewidth=50, color=colors_dict[loc])
+        crt = crt+time_bin*SECS_IN_MINUTE
+
+    #plt.ylim(0)
+    plt.title("Locations from HMM data. Plot over (days): "+str(days_to_consider)+" User: "+username)
+    plt.xlabel("Locations in time", fontsize=10)
+    
+    no_of_ticks = (end_time - start_time)/(plot_time_interval*SECS_IN_MINUTE) + 1
+    #print(plot_time_interval,no_of_ticks)
+    ticks, labels_utc = get_xticks_xlabels_from_time(start_time, end_time, no_of_ticks, plot_time_interval)#(dates_epoch, no_of_ticks)
+    
+    plt.xticks(ticks, labels_utc, rotation = 90)
+    plt.yticks([2], [""])
+    
+    fig.savefig("../../plots/"+username+"/"+"hmm_locations_("+str(locations_count)+")_"+str(days_to_consider)+"days_plot.png")
 
 def get_start_of_time_bins(start_time,end_time,time_bin):
     """Receives a time interval [start_time, end_time]. Divides the interval in seg oftime_bin len 
@@ -140,150 +198,11 @@ def state_transitions(matrix, loc_count):
         Z = model.predict(X)
         return Z
     
-def get_similarity(test_elem, training_elem):
-    if len(test_elem)!=len(training_elem):
-        print("Error in length of fingerprints")
-    
-    value = 0.0
-    for i in range(0,len(test_elem)):
-        value = value + math.fabs(test_elem[i]-training_elem[i])
-        
-    return value
-
-def get_accuracy(list_full_prediction, list_locations_for_full):
-    different = 0
-    for crt in range(0,len(list_full_prediction)):
-        if list_full_prediction[crt] != list_locations_for_full[crt]:
-            different = different + 1
-    return different
-
-def get_test_data(scrambled_data, K, i):
-    """ Separates the data and returns the test sample"""
-    # if we're not handling the last interval
-    if i<K-1:
-        test_data = scrambled_data[i*(len(scrambled_data)/K):(i+1)*(len(scrambled_data)/K)]
-    else:
-        test_data = scrambled_data[i*(len(scrambled_data)/K):]
-    
-    return test_data
-
-def get_training_data(scrambled_data, K, i):
-    """ Separates the data and returns the concatenated K-1 samples for training data"""
-    training_data = scrambled_data[0:i*(len(scrambled_data)/K)]
-
-    # if it is not the last interval we still need to add things that follow the test interval
-    if i<K-1: 
-        training_data = training_data + scrambled_data[(i+1)*(len(scrambled_data)/K):]
-    
-    return training_data
-
-def get_locations_for_training(scrambled_locations_for_full, scrambled_data, K, i):
-    """ Separates the locations from the calculated locations for all data and only returns the ones associated
-    to the training data"""
-    locations_for_training = scrambled_locations_for_full[0:i*(len(scrambled_data)/K)]
-
-    # if it is not the last interval we still need to add things that follow the test interval
-    if i<K-1: 
-        locations_for_training = locations_for_training + scrambled_locations_for_full[(i+1)*(len(scrambled_data)/K):]
-    return locations_for_training    
-    
-def predict_locations_for_test_data(training_data, test_data, list_locations_for_training, loc_count):
-    list_locations_for_test = []
-
-    # for each test element 
-    for test_elem in test_data:
-        similarity_to_location = dict()
-        # the predicted locations can only be from the ones existing in the training set
-        for i in list_locations_for_training:
-            if i not in similarity_to_location.keys():
-                similarity_to_location[i] = 0.0        
-        
-        crt = 0
-        
-        # for each element in the training set
-        for training_elem in training_data:
-            # calculate similarity between test element and element in training set
-            sim = get_similarity(test_elem, training_elem)
-            similarity_to_location[list_locations_for_training[crt]] = similarity_to_location[list_locations_for_training[crt]] + sim
-            crt = crt + 1
-#             print(test_elem,training_elem,sim)
-
-        #normalize similarity (value should be divided to the number of elements that have contributed to it
-        contributors = dict()
-        for i in range(0,loc_count):
-            contributors[i] = 0.0
-
-        for i in range(0,len(training_data)):
-            contributors[list_locations_for_training[i]] = contributors[list_locations_for_training[i]] + 1
-#         print(list_locations_for_training)
-        
-#         print("Similarity before: ",similarity_to_location)
-#         print("Contributors: ",contributors)
-        for crt in range(0,loc_count):
-            if crt in similarity_to_location.keys():
-                similarity_to_location[crt] = similarity_to_location[crt]/contributors[crt] 
-#         print("Similarity after: ",similarity_to_location)    
-#         print(similarity_to_location)        
-        probable_location_for_test_elem = list_locations_for_training[0]
-        for key in similarity_to_location.keys():
-            if similarity_to_location[key] < similarity_to_location[probable_location_for_test_elem]:
-                probable_location_for_test_elem = key
-        
-#         print(test_elem, probable_location_for_test_elem)
-        list_locations_for_test.append(probable_location_for_test_elem)
-    return list_locations_for_test
-
-def randomize_order(data, list_locations_for_full):
-    """ Used for randomizing the order of the data in order to be able to randomly chose the k sub samples"""
-#     print("Randomizing order: order-scrambled, data-scrambled, locations-scrambled")
-    # construct list with elements order
-    scrambled_order = []
-    for i in range(0,len(data)):
-        scrambled_order.append(i)
-#     print(scrambled_order)
-    
-    # scramble order of elements
-    random.shuffle(scrambled_order)
-#     print(scrambled_order)
-    
-    # construct new data list with its elements scrambled according to scramble_order
-    scrambled_data = []
-    for x in scrambled_order:
-        scrambled_data.append(data[x])
-#     print(data)
-#     print(scrambled_data)
-    
-    # construct new expected locations list with elements scrambled accordingly so that they still mach the data
-    scrambled_locations = []
-    for x in scrambled_order:
-        scrambled_locations.append(list_locations_for_full[x])
-#     print(list_locations_for_full)
-#     print(scrambled_locations)
-    
-    return scrambled_data, scrambled_locations, scrambled_order
-
-def unscramble_order(scrambled_data, scrambled_predicted_locations, scrambled_order):
-    # make new lists for unscrambled locations and data
-    unscrambled_data = []
-    unscrambled_locations = []
-    for i in range(0,len(scrambled_order)):
-        unscrambled_data.append(-1)
-        unscrambled_locations.append(-1)
-    
-    # unscrambled the locations & data
-    for i in range(0,len(scrambled_order)):
-        unscrambled_data[scrambled_order[i]] = scrambled_data[i]
-        unscrambled_locations[scrambled_order[i]] = scrambled_predicted_locations[i]
-    
-#     print("Unscrambled: data, locations(predicted for all)")
-#     print(unscrambled_data)
-#     print(unscrambled_locations)
-    return unscrambled_data, unscrambled_locations
 
 def estimate_locations_k_fold_cross_validation(K, matrix, min_loc, max_loc):
     max_score = 0.0
     estimated_locations = 0
-    
+    transitions = []
     # for cross validation with K fold, cv is K, X is matrix and y is expected
     for loc in range(min_loc, max_loc+1):
         expected = state_transitions(matrix, loc)
@@ -308,66 +227,7 @@ def estimate_locations_k_fold_cross_validation(K, matrix, min_loc, max_loc):
         if avg_score > max_score:
             max_score = avg_score
             estimated_locations = loc
+            transitions = expected
     print("Accuracy (score, number of estimated locations): ")
     print(max_score, estimated_locations)
-    return estimated_locations    
-    """
-    # Gets K folding factor and the min_locations and max_locations to consider. Returns best estimated
-    # number of locations that can represent the data
-    print(K)
-    
-    full_predictions_accuracy = dict() # keeps how accurate was the estimation for each considered no of locations
-    
-    for loc_count in range(min_loc, max_loc+1):            
-        print("Locations considered: ",loc_count)
-        locations_for_full = state_transitions(data, loc_count)
-        list_locations_for_full = np.array(locations_for_full).tolist()
-
-        list_scrambled_full_prediction = []
-        scrambled_data, scrambled_locations_for_full, scrambled_order = randomize_order(data, list_locations_for_full)
-    
-        for i in range(0,K):
-            test_data = get_test_data(scrambled_data, K, i)
-            training_data = get_training_data(scrambled_data, K, i)
-            list_scrambled_locations_for_training = get_locations_for_training(scrambled_locations_for_full, scrambled_data, K, i)
-                
-            # convert locations for training to array, but keep a list copy
-            #locations_for_training = np.asarray(list_scrambled_locations_for_training)
-                
-#             print("Sample "+str(i)+" is test data")
-#             print("Scrambled data, scrambled calculated locations, scrambled predicted locations associated")
-#             print(scrambled_data)
-#             print(scrambled_locations_for_full)
-#             print("Scrambled training data and locations associated")
-#             print(training_data)
-#             print(list_scrambled_locations_for_training)
-#             print("Scrambled test data")
-#             print(test_data)
-#             print("Data, training, test size: ",len(data),len(training_data),len(test_data))
-    
-            # print("[Locations] Training",list_locations_for_training)
-            list_scrambled_predicted_locations_for_test = predict_locations_for_test_data(training_data, test_data, list_scrambled_locations_for_training, loc_count)
-            # print("[Locations] Test",list_predicted_locations_for_test)
-            list_scrambled_full_prediction = list_scrambled_full_prediction + list_scrambled_predicted_locations_for_test
-#             print(list_scrambled_full_prediction)
-        
-        unscrambled_data, list_full_prediction = unscramble_order(scrambled_data, list_scrambled_full_prediction, scrambled_order)
-        print("Unscrambled locations: calculated and predicted for "+str(loc_count)+" locations") 
-        print("Calculated locations",list_locations_for_full)
-        print("Predicted  locations", list_full_prediction)
-        # register the accuracy of the estimation when considering that loc_count is the number of locations (hidden states in HMM0
-        full_predictions_accuracy[loc_count] = get_accuracy(list_full_prediction, list_locations_for_full)
-        
-    # calculating which no of locations was best estimated (we start by considering that it was min_loc)
-    best_no_locations_estimated = min_loc
-    for key in full_predictions_accuracy.keys():
-        # if finding that for another considered no of locations there where fewer errors in the prediction
-        if full_predictions_accuracy[key] < full_predictions_accuracy[best_no_locations_estimated]:
-            best_no_locations_estimated = key
-        # if the estimation is equally good for more locations, we consider the most we can have
-        elif full_predictions_accuracy[key] == full_predictions_accuracy[best_no_locations_estimated] and best_no_locations_estimated < key:
-            best_no_locations_estimated = key
-    print("Prediction accuracy for considered number of hidden states")
-    print(full_predictions_accuracy)
-    return best_no_locations_estimated
-"""
+    return estimated_locations, transitions    
