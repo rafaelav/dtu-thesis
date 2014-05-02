@@ -13,6 +13,8 @@ import math
 from sklearn import hmm
 import numpy as np
 from sklearn import cross_validation
+from sklearn import svm
+
 
 SECS_IN_MINUTE = 60
 
@@ -278,8 +280,37 @@ def unscramble_order(scrambled_data, scrambled_predicted_locations, scrambled_or
 #     print(unscrambled_locations)
     return unscrambled_data, unscrambled_locations
 
-def estimate_locations_k_fold_cross_validation(K, data, min_loc, max_loc):
+def estimate_locations_k_fold_cross_validation(K, matrix, min_loc, max_loc):
+    max_score = 0.0
+    estimated_locations = 0
     
+    # for cross validation with K fold, cv is K, X is matrix and y is expected
+    for loc in range(min_loc, max_loc+1):
+        expected = state_transitions(matrix, loc)
+        print("Considering "+str(loc)+" locations, expected division is:")
+        print(expected)
+        expected = np.array(expected).tolist()
+        #print("Locations: "+str(loc))
+        #print(expected)
+                 
+        X = np.array(matrix)
+        y = np.array(expected)
+        
+        clf = svm.SVC(kernel='linear', C=1)
+        scores = cross_validation.cross_val_score(clf, X, y, cv=K)
+    
+        print(scores)
+        avg_score = 0.0
+        for x in scores:
+            avg_score = avg_score + x
+        avg_score = avg_score/len(scores)
+        
+        if avg_score > max_score:
+            max_score = avg_score
+            estimated_locations = loc
+    print("Accuracy (score, number of estimated locations): ")
+    print(max_score, estimated_locations)
+    return estimated_locations    
     """
     # Gets K folding factor and the min_locations and max_locations to consider. Returns best estimated
     # number of locations that can represent the data

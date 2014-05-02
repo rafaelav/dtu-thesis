@@ -14,7 +14,7 @@ K = 10
 # set values
 username = "user_6_sorted" 
 start_day = 0 
-days_to_consider = 2
+days_to_consider = 1
 m_most_popular_bssids = -1
 time_bin = 5
 base = "../../plots/"

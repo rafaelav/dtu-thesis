@@ -7,7 +7,7 @@ import io
 import random
 
 MIN_RSSI = -99
-MAX_RSSI = -60
+MAX_RSSI = -1
 
 DAY_INTERVAL_SECS = 24 * 60 * 60
 SEC_IN_MINUTE = 60
