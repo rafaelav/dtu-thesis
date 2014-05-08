@@ -16,15 +16,19 @@ week   = {0:'Mon', 1:'Tue', 2:'Wed', 3:'Thu',  4:'Fri', 5:'Sat', 6:'Sun'}
 SECS_IN_MINUTE = 60
 MAX_BSSID_IN_PLOT = 50
 
-user_file = "user_6_sorted"
-start_day = 0
-days_to_consider = 1
-n_best_signal_bssids = -1 
-m_most_popular_bssids = -1
-time_bin = 5
-plot_interval = 60 # per ne day plot xticks are from 60 to 60 mins
+def start_plot_presence (user_list, start_day, days_to_consider, n_best_signal_bssids, m_most_popular_bssids, time_bin, plot_interval):
+    for user in user_list:
+        user_file = "user_"+str(user)+"_sorted"
+        matrix = bssid_without_rssi_strength_plot(user_file, start_day, days_to_consider, m_most_popular_bssids, time_bin, days_to_consider*plot_interval)    
+# user_list = [6]
+# start_day = 0
+# days_to_consider = 1
+# n_best_signal_bssids = -1 
+# m_most_popular_bssids = -1
+# time_bin = 5
+# plot_interval = 60 # per ne day plot xticks are from 60 to 60 mins
 
-def pickle_result(matrix, m_most_popular_bssids):
+def pickle_result(matrix, m_most_popular_bssids, user_file, days_to_consider):
     # pickle presence matrix
     print("Need to pickle")
     if m_most_popular_bssids == -1:
@@ -202,7 +206,7 @@ def bssid_without_rssi_strength_plot(user_file, start_day, days_to_consider, m_m
     #print("Number of bssids in matrix:",len(matrix_presence_on_rows.keys()))
     
     # pickle presence matrix
-    pickle_result(matrix_presence_on_rows, m_most_popular_bssids)
+    pickle_result(matrix_presence_on_rows, m_most_popular_bssids, user_file, days_to_consider)
     
     ### Prepare data for plotting (only <= 50 are ploted)
     if m_most_popular_bssids == -1 or m_most_popular_bssids>MAX_BSSID_IN_PLOT:
@@ -215,4 +219,6 @@ def bssid_without_rssi_strength_plot(user_file, start_day, days_to_consider, m_m
     plot_data(start_time, end_time, plot_time_interval, matrix_presence_on_rows, column_elements, color_dict, time_bin, user_file, days_to_consider)
     return matrix_presence_on_rows
 
-matrix = bssid_without_rssi_strength_plot(user_file, start_day, days_to_consider, m_most_popular_bssids, time_bin, days_to_consider*plot_interval)
+# for user in user_list:
+#     user_file = "user_"+str(user)+"_sorted"
+#     matrix = bssid_without_rssi_strength_plot(user_file, start_day, days_to_consider, m_most_popular_bssids, time_bin, days_to_consider*plot_interval)

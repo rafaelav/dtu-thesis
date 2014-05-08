@@ -10,14 +10,18 @@ from handlers import user_data_handler
 
 from graphics import bssids_signals_time_plot
 
-user_file = "user_6_sorted"
-start_day = 0
-days_to_consider = 1
-n_best_signal_bssids = -1 
-m_most_popular_bssids = -1
-max_in_legend = 10
-days_count = 1
-plot_interval = 60 # per ne day plot xticks are from 60 to 60 mins
+def start_plot_bssid_rssi (user_list, start_day, days_to_consider, n_best_signal_bssids, m_most_popular_bssids, max_in_legend, days_count, plot_interval):
+    for user in user_list:
+        user_file = "user_"+str(user)+"_sorted"
+        launch_plot(user_file, start_day, days_to_consider, n_best_signal_bssids, m_most_popular_bssids, max_in_legend, days_to_consider*plot_interval)
+# user_list = [6]
+# start_day = 0
+# days_to_consider = 1
+# n_best_signal_bssids = -1 
+# m_most_popular_bssids = -1
+# max_in_legend = 10
+# days_count = 1
+# plot_interval = 60 # per ne day plot xticks are from 60 to 60 mins
 
 
 def launch_plot(user_file, start_day, days_to_consider, n_best_signal_bssids, m_most_popular_bssids, max_in_legend, plot_time_interval):
@@ -55,5 +59,3 @@ def launch_plot(user_file, start_day, days_to_consider, n_best_signal_bssids, m_
     print("Data for user "+user_file+" retrieved. Moving on to preparing the data for plotting...")
     fig_sig_strength = bssids_signals_time_plot.prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_dict_with_time_and_rssi, color_codes, most_common_bssids_legend, plot_time_interval, data_start_time, data_end_time)
     fig_sig_strength.clear
-
-launch_plot(user_file, start_day, days_to_consider, n_best_signal_bssids, m_most_popular_bssids, max_in_legend, days_to_consider*plot_interval)
