@@ -61,4 +61,4 @@ for i in range(0,estimated_hidden_states):
 colors_dict = user_data_handler.generate_color_codes_for_bssid(locations)
     
 # plot transitions
-location_data_handler.plot_locations_from_hmm(transitions_between_states, days_to_consider, time_bin, user_file, colors_dict, start_time, end_time, plot_interval*days_to_consider)
+location_data_handler.plot_locations(transitions_between_states, days_to_consider, time_bin, user_file, colors_dict, start_time, end_time, plot_interval*days_to_consider, "hmm")

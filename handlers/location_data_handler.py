@@ -194,22 +194,39 @@ def create_matrix_for_hmm(presence_matrix):
     # matrix and the order considered for the bssids in the matrix
     return result_matrix, bssids
 
-def state_transitions(matrix, loc_count):
-    model = hmm.GaussianHMM(loc_count, "full")
-    #print(matrix_with_bssids_on_columns)
-    X = np.array(matrix)
-    model.fit([X])
-    Z = model.predict(X)
-    return Z
+def state_transitions(matrix, loc_count, loc_type):
+    if loc_type == "hmm":
+        model = hmm.GaussianHMM(loc_count, "full")
+        #print(matrix_with_bssids_on_columns)
+        X = np.array(matrix)
+        model.fit([X])
+        result = model.predict(X)
+    elif loc_type == "kmeans":
+        n_clusters=loc_count
+        init='k-means++'
+        n_init=10
+        max_iter=500
+        tol=0.0001
+        precompute_distances=True
+        verbose=0
+        random_state=None
+        copy_x=True
+        n_jobs=1    
+        
+        kmeans = KMeans(n_clusters, init, n_init, max_iter, tol, precompute_distances, verbose, random_state, copy_x, n_jobs)
+        result = kmeans.fit_predict(matrix)
+    else:
+        result = None
+    return result
     
 
-def estimate_locations_k_fold_cross_validation(K, matrix, min_loc, max_loc):
+def estimate_locations_k_fold_cross_validation(K, matrix, min_loc, max_loc, loc_type):
     max_score = 0.0
     estimated_locations = 0
     transitions = []
     # for cross validation with K fold, cv is K, X is matrix and y is expected
     for loc in range(min_loc, max_loc+1):
-        expected = state_transitions(matrix, loc)
+        expected = state_transitions(matrix, loc, loc_type)
         print("Considering "+str(loc)+" locations, expected division is:")
         print(expected)
         expected = np.array(expected).tolist()
@@ -236,51 +253,51 @@ def estimate_locations_k_fold_cross_validation(K, matrix, min_loc, max_loc):
     print(max_score, estimated_locations)
     return estimated_locations, transitions    
 
-def state_transitions_kmeans(matrix, loc_count):
-    n_clusters=loc_count
-    init='k-means++'
-    n_init=10
-    max_iter=500
-    tol=0.0001
-    precompute_distances=True
-    verbose=0
-    random_state=None
-    copy_x=True
-    n_jobs=1    
-    
-    kmeans = KMeans(n_clusters, init, n_init, max_iter, tol, precompute_distances, verbose, random_state, copy_x, n_jobs)
-    result = kmeans.fit_predict(matrix)
-    return result    
-
-def estimate_locations_k_fold_cross_validation_with_kmeans(K, matrix, min_loc, max_loc):
-    max_score = 0.0
-    estimated_locations = 0
-    transitions = []
-    # for cross validation with K fold, cv is K, X is matrix and y is expected
-    for loc in range(min_loc, max_loc+1):
-        expected = state_transitions_kmeans(matrix, loc)
-        print("Considering "+str(loc)+" locations, expected division is:")
-        print(expected)
-        expected = np.array(expected).tolist()
-        #print("Locations: "+str(loc))
-        #print(expected)
-                 
-        X = np.array(matrix)
-        y = np.array(expected)
-        
-        clf = svm.SVC(kernel='linear', C=1)
-        scores = cross_validation.cross_val_score(clf, X, y, cv=K)
-    
-        print(scores)
-        avg_score = 0.0
-        for x in scores:
-            avg_score = avg_score + x
-        avg_score = avg_score/len(scores)
-        
-        if avg_score > max_score:
-            max_score = avg_score
-            estimated_locations = loc
-            transitions = expected
-    print("Accuracy (score, number of estimated locations): ")
-    print(max_score, estimated_locations)
-    return estimated_locations, transitions    
+# def state_transitions_kmeans(matrix, loc_count):
+#     n_clusters=loc_count
+#     init='k-means++'
+#     n_init=10
+#     max_iter=500
+#     tol=0.0001
+#     precompute_distances=True
+#     verbose=0
+#     random_state=None
+#     copy_x=True
+#     n_jobs=1    
+#     
+#     kmeans = KMeans(n_clusters, init, n_init, max_iter, tol, precompute_distances, verbose, random_state, copy_x, n_jobs)
+#     result = kmeans.fit_predict(matrix)
+#     return result    
+# 
+# def estimate_locations_k_fold_cross_validation_with_kmeans(K, matrix, min_loc, max_loc):
+#     max_score = 0.0
+#     estimated_locations = 0
+#     transitions = []
+#     # for cross validation with K fold, cv is K, X is matrix and y is expected
+#     for loc in range(min_loc, max_loc+1):
+#         expected = state_transitions_kmeans(matrix, loc)
+#         print("Considering "+str(loc)+" locations, expected division is:")
+#         print(expected)
+#         expected = np.array(expected).tolist()
+#         #print("Locations: "+str(loc))
+#         #print(expected)
+#                  
+#         X = np.array(matrix)
+#         y = np.array(expected)
+#         
+#         clf = svm.SVC(kernel='linear', C=1)
+#         scores = cross_validation.cross_val_score(clf, X, y, cv=K)
+#     
+#         print(scores)
+#         avg_score = 0.0
+#         for x in scores:
+#             avg_score = avg_score + x
+#         avg_score = avg_score/len(scores)
+#         
+#         if avg_score > max_score:
+#             max_score = avg_score
+#             estimated_locations = loc
+#             transitions = expected
+#     print("Accuracy (score, number of estimated locations): ")
+#     print(max_score, estimated_locations)
+#     return estimated_locations, transitions    
