@@ -12,6 +12,7 @@ from sklearn import hmm
 import numpy as np
 from sklearn import cross_validation
 from sklearn import svm
+from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import datetime
 week   = {0:'Mon', 1:'Tue', 2:'Wed', 3:'Thu',  4:'Fri', 5:'Sat', 6:'Sun'}
@@ -43,7 +44,7 @@ def get_xticks_xlabels_from_time(data_start_time, data_end_time, no_of_ticks, be
         
     return dates_epoch, dates_utc
 
-def plot_locations_from_hmm(list_locations_over_time_bins, days_to_consider, time_bin, username, colors_dict, start_time, end_time, plot_time_interval):
+def plot_locations(list_locations_over_time_bins, days_to_consider, time_bin, username, colors_dict, start_time, end_time, plot_time_interval, loc_type):
     print("Time bins: ",len(list_locations_over_time_bins))
     # get locations count
     locations_count = 1 + max(np.array(list_locations_over_time_bins).tolist())
@@ -64,7 +65,7 @@ def plot_locations_from_hmm(list_locations_over_time_bins, days_to_consider, tim
         crt = crt+time_bin*SECS_IN_MINUTE
 
     #plt.ylim(0)
-    plt.title("Locations from HMM data. Plot over (days): "+str(days_to_consider)+" User: "+username)
+    plt.title("Locations from "+loc_type+" data. Plot over (days): "+str(days_to_consider)+" User: "+username)
     plt.xlabel("Locations in time", fontsize=10)
     
     no_of_ticks = (end_time - start_time)/(plot_time_interval*SECS_IN_MINUTE) + 1
@@ -74,7 +75,10 @@ def plot_locations_from_hmm(list_locations_over_time_bins, days_to_consider, tim
     plt.xticks(ticks, labels_utc, rotation = 90)
     plt.yticks([2], [""])
     
-    fig.savefig("../../plots/"+username+"/"+"hmm_locations_("+str(locations_count)+")_"+str(days_to_consider)+"days_plot.png")
+    if loc_type == "hmm":
+        fig.savefig("../../plots/"+username+"/"+"hmm_locations_("+str(locations_count)+")_"+str(days_to_consider)+"days_plot.png")
+    elif loc_type == "kmeans":
+        fig.savefig("../../plots/"+username+"/"+"kmeans_locations_("+str(locations_count)+")_"+str(days_to_consider)+"days_plot.png")
 
 def get_start_of_time_bins(start_time,end_time,time_bin):
     """Receives a time interval [start_time, end_time]. Divides the interval in seg oftime_bin len 
@@ -191,12 +195,12 @@ def create_matrix_for_hmm(presence_matrix):
     return result_matrix, bssids
 
 def state_transitions(matrix, loc_count):
-        model = hmm.GaussianHMM(loc_count, "full")
-        #print(matrix_with_bssids_on_columns)
-        X = np.array(matrix)
-        model.fit([X])
-        Z = model.predict(X)
-        return Z
+    model = hmm.GaussianHMM(loc_count, "full")
+    #print(matrix_with_bssids_on_columns)
+    X = np.array(matrix)
+    model.fit([X])
+    Z = model.predict(X)
+    return Z
     
 
 def estimate_locations_k_fold_cross_validation(K, matrix, min_loc, max_loc):
@@ -206,6 +210,55 @@ def estimate_locations_k_fold_cross_validation(K, matrix, min_loc, max_loc):
     # for cross validation with K fold, cv is K, X is matrix and y is expected
     for loc in range(min_loc, max_loc+1):
         expected = state_transitions(matrix, loc)
+        print("Considering "+str(loc)+" locations, expected division is:")
+        print(expected)
+        expected = np.array(expected).tolist()
+        #print("Locations: "+str(loc))
+        #print(expected)
+                 
+        X = np.array(matrix)
+        y = np.array(expected)
+        
+        clf = svm.SVC(kernel='linear', C=1)
+        scores = cross_validation.cross_val_score(clf, X, y, cv=K)
+    
+        print(scores)
+        avg_score = 0.0
+        for x in scores:
+            avg_score = avg_score + x
+        avg_score = avg_score/len(scores)
+        
+        if avg_score > max_score:
+            max_score = avg_score
+            estimated_locations = loc
+            transitions = expected
+    print("Accuracy (score, number of estimated locations): ")
+    print(max_score, estimated_locations)
+    return estimated_locations, transitions    
+
+def state_transitions_kmeans(matrix, loc_count):
+    n_clusters=loc_count
+    init='k-means++'
+    n_init=10
+    max_iter=500
+    tol=0.0001
+    precompute_distances=True
+    verbose=0
+    random_state=None
+    copy_x=True
+    n_jobs=1    
+    
+    kmeans = KMeans(n_clusters, init, n_init, max_iter, tol, precompute_distances, verbose, random_state, copy_x, n_jobs)
+    result = kmeans.fit_predict(matrix)
+    return result    
+
+def estimate_locations_k_fold_cross_validation_with_kmeans(K, matrix, min_loc, max_loc):
+    max_score = 0.0
+    estimated_locations = 0
+    transitions = []
+    # for cross validation with K fold, cv is K, X is matrix and y is expected
+    for loc in range(min_loc, max_loc+1):
+        expected = state_transitions_kmeans(matrix, loc)
         print("Considering "+str(loc)+" locations, expected division is:")
         print(expected)
         expected = np.array(expected).tolist()
