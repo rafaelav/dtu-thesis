@@ -10,7 +10,7 @@ from graphics import plot_bssid_presence
 from graphics import plot_hmm_locations
 from graphics import plot_kmeans_locations
 from graphics import plot_bssid_rssi
-user_list = [6]
+user_list = [1,2,3,6,9,15,17,18,40]
 start_day = 0
 days_to_consider = 1
 n_best_signal_bssids = -1 
