@@ -10,7 +10,7 @@ from handlers import user_data_handler
 
 from graphics import bssids_signals_time_plot
 
-def start_plot_bssid_rssi (user_list, start_day, days_to_consider, n_best_signal_bssids, m_most_popular_bssids, max_in_legend, days_count, plot_interval):
+def start_plot_bssid_rssi (user_list, start_day, days_to_consider, n_best_signal_bssids, m_most_popular_bssids, max_in_legend, plot_interval):
     for user in user_list:
         user_file = "user_"+str(user)+"_sorted"
         launch_plot(user_file, start_day, days_to_consider, n_best_signal_bssids, m_most_popular_bssids, max_in_legend, days_to_consider*plot_interval)
