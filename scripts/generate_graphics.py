@@ -20,6 +20,7 @@ m_most_popular_bssids = -1
 max_in_legend = 10
 plot_interval = 60 # per ne day plot xticks are from 60 to 60 mins
 time_bin = 5
+iterations = 10 # number of times it runs hmm before trying to figure out best estimation
 
 # ploting signal strength for bssids over time
 print("BSSID with RSSI value over time")
@@ -28,7 +29,7 @@ print("BSSID without RSSI value over time")
 #plot_bssid_presence.start_plot_presence(user_list, start_day, days_to_consider, n_best_signal_bssids, m_most_popular_bssids, time_bin, plot_interval)
 print("HMM locations")
 print("Start time: "+str(datetime.datetime.now()))
-plot_hmm_locations.start_plot_hmm_locations(user_list, start_day, days_to_consider, m_most_popular_bssids, time_bin, plot_interval)
+plot_hmm_locations.start_plot_hmm_locations(user_list, start_day, days_to_consider, m_most_popular_bssids, time_bin, plot_interval, iterations)
 print("End time: "+str(datetime.datetime.now()))
 print("Kmeans locations")
 #plot_kmeans_locations.start_plot_hmm_locations (user_list, start_day, days_to_consider, m_most_popular_bssids, time_bin, plot_interval)

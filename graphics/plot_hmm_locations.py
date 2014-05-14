@@ -21,10 +21,10 @@ K = 10
 base = "../../plots/"
 LOC_TYPE = "hmm"
 
-def start_plot_hmm_locations (user_list, start_day, days_to_consider, m_most_popular_bssids, time_bin, plot_interval):
+def start_plot_hmm_locations (user_list, start_day, days_to_consider, m_most_popular_bssids, time_bin, plot_interval, iterations):
     for user in user_list:
         user_file = "user_"+str(user)+"_sorted"
-        determine_estimated_locations_and_plot(user_file,start_day,days_to_consider,m_most_popular_bssids,time_bin,plot_interval)    
+        determine_estimated_locations_and_plot(user_file,start_day,days_to_consider,m_most_popular_bssids,time_bin,plot_interval,iterations)    
 # # list of users
 # users_list = [6]
 # # set values 
@@ -34,7 +34,7 @@ def start_plot_hmm_locations (user_list, start_day, days_to_consider, m_most_pop
 # time_bin = 5
 # plot_interval = 60
 
-def determine_estimated_locations_and_plot(user_file,start_day,days_to_consider,m_most_popular_bssids,time_bin,plot_interval):
+def determine_estimated_locations_and_plot(user_file,start_day,days_to_consider,m_most_popular_bssids,time_bin,plot_interval,iterations):
     pickled_matrix_file = base+user_file+"/"+"pickled_matrix_all_"+user_file+"_"+str(days_to_consider)+"days.p"
     
     user_data = user_data_handler.retrieve_data_from_user(user_file,start_day,days_to_consider)    
@@ -55,7 +55,29 @@ def determine_estimated_locations_and_plot(user_file,start_day,days_to_consider,
     hmm_matrix, bssids = location_data_handler.create_matrix_for_hmm(presence_matrix)
     
     # determine locations estimation
-    estimated_hidden_states, transitions_between_states = location_data_handler.estimate_locations_k_fold_cross_validation(K, hmm_matrix, 2, 10, LOC_TYPE)
+    dict_estimations = dict()
+    for iter in range(0,iterations):
+        print("ITERRATION: "+str(iter+1)+"/"+str(iterations))
+        estimated_hidden_states, transitions_between_states = location_data_handler.estimate_locations_k_fold_cross_validation(K, hmm_matrix, 2, 10, LOC_TYPE)
+        if estimated_hidden_states not in dict_estimations.keys(): # this number was never estimated before
+            dict_estimations[estimated_hidden_states] = []
+        dict_estimations[estimated_hidden_states].append(transitions_between_states) # add solution for this estimations
+    # DEBUG
+    for key in dict_estimations:
+        print(key, len(dict_estimations[key]))
+    # END DEBUG
+    
+    # find most likely estimate and pick a transitin
+    max = 0
+    states = 0
+    for key in dict_estimations.keys():
+        if len(dict_estimations[key])>max:
+            max = len(dict_estimations[key])
+            states = key
+    
+    estimated_hidden_states = states # get the best posibility
+    transitions_between_states = dict_estimations[estimated_hidden_states][0] # take fist transitions it estimated for given states 
+
     print("Results (estimated number of locations and transitions between them")
     print(estimated_hidden_states)
     estimated_locations_file = base+user_file+"/"+"estimated_locations_hmm_"+user_file+"_"+str(days_to_consider)+"days.p"
