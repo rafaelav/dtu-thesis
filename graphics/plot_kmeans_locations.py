@@ -78,8 +78,10 @@ def determine_estimated_locations_and_plot(user_file,start_day,days_to_consider,
         locations.append(i)
     colors_dict = user_data_handler.generate_color_codes_for_bssid(locations)
         
+    # file path where to plot
+    file_path = "../../plots/"+user_file+"/"+"kmeans_locations_("+str(estimated_hidden_states)+")_"+str(days_to_consider)+"days_plot.png"
     # plot transitions
-    location_data_handler.plot_locations(transitions_between_states, days_to_consider, time_bin, user_file, colors_dict, start_time, end_time, plot_interval*days_to_consider, LOC_TYPE)
+    location_data_handler.plot_locations(transitions_between_states, days_to_consider, time_bin, user_file, colors_dict, start_time, end_time, plot_interval*days_to_consider, LOC_TYPE,file_path)
 
 # for user in users_list:
 #     user_file = "user_"+str(user)+"_sorted"

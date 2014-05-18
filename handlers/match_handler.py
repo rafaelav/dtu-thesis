@@ -16,22 +16,31 @@ K = 10
 base = "../../plots/"
 LOC_TYPE = "hmm"
 
-def calculate_transitions_over_time(user_file, start_day, days_count, m_most_popular_bssids, time_bin, iterations):
-    days_to_consider = 1 # always process one day at the time
-    for day in range(start_day, start_day+days_count):
+def calculate_transitions_over_time(user_file, start_day, days_count, step, m_most_popular_bssids, time_bin, plot_interval, iterations):
+    days_to_consider = step # always process step days at the time
+    start_days = []
+    for day in range(start_day, start_day+days_count,step):
+        start_days.append(day)
         # create the transition matrix for each day
-        transitions = create_day_transition_array(user_file, day, days_to_consider, m_most_popular_bssids, time_bin, iterations)
-        save_transitions(user_file, day, transitions)
+        transitions, estimated_hidden_states, start_time, end_time = create_transition_array(user_file, day, days_to_consider, m_most_popular_bssids, time_bin, iterations)
+        save_transitions(user_file, day, days_to_consider, transitions)
+        file_path = "../../plots/"+user_file+"/"+"hmm_locations_"+"day_"+str(day)+"_count_"+str(days_to_consider)+"_plot.png"
+        plot_transitions(user_file, days_to_consider, estimated_hidden_states, transitions, time_bin, start_time, end_time, plot_interval, file_path)
+    print(start_days)
         
-def save_transitions(user_file, day, transitions):
-    transitions_file = base+user_file+"/"+"day_"+str(day)+"_transitions.p"
+def save_transitions(user_file, day, days_to_consider, transitions):
+    transitions_file = base+user_file+"/"+"day_"+str(day)+"_count_"+str(days_to_consider)+"_transitions.p"
     
     # save transitions for currentd day
     pickle.dump(transitions, open(transitions_file, "wb"))    
         
-def create_day_transition_array(user_file, day, days_to_consider, m_most_popular_bssids,time_bin, iterations):
-    pickled_matrix_file = base+user_file+"/"+"day_"+str(day)+"_pickled_presence_matrix.p"
+def create_transition_array(user_file, day, days_to_consider, m_most_popular_bssids,time_bin, iterations):
+    pickled_matrix_file = base+user_file+"/"+"day_"+str(day)+"_count_"+str(days_to_consider)+"_pickled_presence_matrix.p"
 
+    user_data = user_data_handler.retrieve_data_from_user(user_file,day,days_to_consider)    
+    start_time = user_data[0][1]
+    end_time = user_data[len(user_data)-1][1]
+    
     # only re-calculate presence matrxi and pickle it if it doens't already exist
     if not os.path.isfile(pickled_matrix_file):
         print("Matrix was not claculated previously... need to do this now")
@@ -65,10 +74,21 @@ def create_day_transition_array(user_file, day, days_to_consider, m_most_popular
     estimated_hidden_states = states # get the best posibility
     transitions_between_states = dict_estimations[estimated_hidden_states][0] # take fist transitions it estimated for given states 
 
-    print("DAY "+str(day)+" - Results (estimated number of locations and transitions between them")
+    print("DAY "+str(day)+" COUNT "+str(days_to_consider)+" - Results (estimated number of locations and transitions between them")
     print(estimated_hidden_states)
     print(transitions_between_states)
-    return transitions_between_states
+    return transitions_between_states, estimated_hidden_states, start_time, end_time
+
+def plot_transitions(user_file, days_to_consider, estimated_hidden_states, transitions, time_bin, start_time, end_time, plot_interval, file_path):
+    # get colors for the locations (0 to estimated_hidden_states)
+    locations = []
+    for i in range(0,estimated_hidden_states):
+        locations.append(i)
+    colors_dict = user_data_handler.generate_color_codes_for_bssid(locations)
+        
+    # plot transitions
+    location_data_handler.plot_locations(transitions, days_to_consider, time_bin, user_file, colors_dict, start_time, end_time, plot_interval*days_to_consider, LOC_TYPE, file_path)
+
 
 def pickle_presence_matrix(user_file, start_day, days_to_consider, time_bin, m_most_popular_bssids):
     ### Prepare and calculate pickled matrix for m_most_popolar
@@ -80,7 +100,7 @@ def pickle_presence_matrix(user_file, start_day, days_to_consider, time_bin, m_m
     print("Number of bssids in matrix:",len(presence_on_rows.keys()))
     print("Need to pickle")
     if m_most_popular_bssids == -1:
-        pickle.dump(presence_on_rows, open("../../plots/"+user_file+"/"+"day_"+str(start_day)+"_pickled_presence_matrix.p", "wb"))
+        pickle.dump(presence_on_rows, open("../../plots/"+user_file+"/"+"day_"+str(start_day)+"_count_"+str(days_to_consider)+"_pickled_presence_matrix.p", "wb"))
     else:
         print("NOT TRATING CASE WITH LESS BSSIDS")
     print("Pickled")

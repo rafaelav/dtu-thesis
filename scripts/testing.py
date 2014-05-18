@@ -144,5 +144,31 @@ def testing_get_running_rssi_average_for_time_window():
 #testing_get_ordered_time_list()
 #testing_get_bssid_info_from_data()
 #testing_get_bssid_sample_frequency_over_time_bin_all()
-testing_get_bssid_values_for_rssis_per_time_bins()
+#testing_get_bssid_values_for_rssis_per_time_bins()
 #testing_get_running_rssi_average_for_time_window()
+
+def testing_get_data():
+    user_data = user_data_handler.retrieve_data_from_user("user_6_sorted", 0, 2)
+    start_time = user_data[0][1]
+    end_time = user_data[len(user_data)-1][1]
+    after_last = len(user_data)
+    print(start_time,end_time, len(user_data))
+    
+    user_data = user_data_handler.retrieve_data_from_user("user_6_sorted", 2, 2)
+    start_time = user_data[0][1]
+    end_time = user_data[len(user_data)-1][1]
+    print(start_time,end_time, len(user_data))
+    
+    user_data = user_data_handler.retrieve_data_from_user("user_6_sorted", 0, 3)
+    start_time = user_data[0][1]
+    end_time = user_data[len(user_data)-1][1]
+    print(start_time,end_time, len(user_data))
+    print(user_data[after_last-1][1])
+    print(user_data[after_last][1])
+    
+    print(user_data[after_last-1])
+    print(user_data[after_last])
+
+testing_get_data()
+    
+    

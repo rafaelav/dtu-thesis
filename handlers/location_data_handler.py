@@ -44,7 +44,7 @@ def get_xticks_xlabels_from_time(data_start_time, data_end_time, no_of_ticks, be
         
     return dates_epoch, dates_utc
 
-def plot_locations(list_locations_over_time_bins, days_to_consider, time_bin, username, colors_dict, start_time, end_time, plot_time_interval, loc_type):
+def plot_locations(list_locations_over_time_bins, days_to_consider, time_bin, username, colors_dict, start_time, end_time, plot_time_interval, loc_type, file_path):
     print("Time bins: ",len(list_locations_over_time_bins))
     # get locations count
     locations_count = 1 + max(np.array(list_locations_over_time_bins).tolist())
@@ -75,10 +75,11 @@ def plot_locations(list_locations_over_time_bins, days_to_consider, time_bin, us
     plt.xticks(ticks, labels_utc, rotation = 90)
     plt.yticks([2], [""])
     
-    if loc_type == "hmm":
-        fig.savefig("../../plots/"+username+"/"+"hmm_locations_("+str(locations_count)+")_"+str(days_to_consider)+"days_plot.png")
-    elif loc_type == "kmeans":
-        fig.savefig("../../plots/"+username+"/"+"kmeans_locations_("+str(locations_count)+")_"+str(days_to_consider)+"days_plot.png")
+    fig.savefig(file_path)
+#     if loc_type == "hmm":
+#         fig.savefig("../../plots/"+username+"/"+"hmm_locations_("+str(locations_count)+")_"+str(days_to_consider)+"days_plot.png")
+#     elif loc_type == "kmeans":
+#         fig.savefig("../../plots/"+username+"/"+"kmeans_locations_("+str(locations_count)+")_"+str(days_to_consider)+"days_plot.png")
 
 def get_start_of_time_bins(start_time,end_time,time_bin):
     """Receives a time interval [start_time, end_time]. Divides the interval in seg oftime_bin len 
