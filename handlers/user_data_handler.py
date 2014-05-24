@@ -19,6 +19,7 @@ def retrieve_data_from_user(user_file_name, start_day, days_to_consider):
     """Returns list with list elements where the elements contain: user id, timestamp, ssid bssid rssi context"""
     """ user_file_name - the user data file, start_day - which should be the first day to retrieve data from (calculated as 24h * number from first moment recorded), days_to_consider - for how many cycles of 24 hours from first day to retrieve data"""
     user_data = []
+    print('../../wifi_data/{0}'.format(user_file_name))
     with io.open('../../wifi_data/{0}'.format(user_file_name), encoding='utf-8') as f:
         first_registered_time_of_day = 0 
         first_registered_timestamp = 0

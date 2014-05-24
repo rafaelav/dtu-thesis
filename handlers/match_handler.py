@@ -16,13 +16,14 @@ K = 10
 base = "../../plots/"
 LOC_TYPE = "hmm"
 
-def calculate_transitions_over_time(user_file, start_day, days_count, step, m_most_popular_bssids, time_bin, plot_interval, iterations):
+def calculate_transitions_over_time(user_file, start_day, days_count, step, m_most_popular_bssids, time_bin, plot_interval, iterations, min_loc, max_loc):
     days_to_consider = step # always process step days at the time
     start_days = []
     for day in range(start_day, start_day+days_count,step):
         start_days.append(day)
+        print(day)
         # create the transition matrix for each day
-        transitions, estimated_hidden_states, start_time, end_time = create_transition_array(user_file, day, days_to_consider, m_most_popular_bssids, time_bin, iterations)
+        transitions, estimated_hidden_states, start_time, end_time = create_transition_array(user_file, day, days_to_consider, m_most_popular_bssids, time_bin, iterations, min_loc, max_loc)
         save_transitions(user_file, day, days_to_consider, transitions)
         file_path = "../../plots/"+user_file+"/"+"hmm_locations_"+"day_"+str(day)+"_count_"+str(days_to_consider)+"_plot.png"
         plot_transitions(user_file, days_to_consider, estimated_hidden_states, transitions, time_bin, start_time, end_time, plot_interval, file_path)
@@ -34,7 +35,7 @@ def save_transitions(user_file, day, days_to_consider, transitions):
     # save transitions for currentd day
     pickle.dump(transitions, open(transitions_file, "wb"))    
         
-def create_transition_array(user_file, day, days_to_consider, m_most_popular_bssids,time_bin, iterations):
+def create_transition_array(user_file, day, days_to_consider, m_most_popular_bssids,time_bin, iterations, min_loc, max_loc):
     pickled_matrix_file = base+user_file+"/"+"day_"+str(day)+"_count_"+str(days_to_consider)+"_pickled_presence_matrix.p"
 
     user_data = user_data_handler.retrieve_data_from_user(user_file,day,days_to_consider)    
@@ -58,7 +59,7 @@ def create_transition_array(user_file, day, days_to_consider, m_most_popular_bss
     dict_estimations = dict()
     for iter in range(0,iterations):
         print("ITERRATION: "+str(iter+1)+"/"+str(iterations))
-        estimated_hidden_states, transitions_between_states = location_data_handler.estimate_locations_k_fold_cross_validation(K, hmm_matrix, 2, 10, LOC_TYPE)
+        estimated_hidden_states, transitions_between_states = location_data_handler.estimate_locations_k_fold_cross_validation(K, hmm_matrix, min_loc, max_loc, LOC_TYPE)
         if estimated_hidden_states not in dict_estimations.keys(): # this number was never estimated before
             dict_estimations[estimated_hidden_states] = []
         dict_estimations[estimated_hidden_states].append(transitions_between_states) # add solution for this estimations
@@ -104,3 +105,44 @@ def pickle_presence_matrix(user_file, start_day, days_to_consider, time_bin, m_m
     else:
         print("NOT TRATING CASE WITH LESS BSSIDS")
     print("Pickled")
+
+def extract_fingerprints_for_locations(transitions_file, presence_matrix_file, day):
+    presence_matrix = location_data_handler.load_pickled_file(presence_matrix_file)
+    transitions = location_data_handler.load_pickled_file(transitions_file)
+    
+    bssids = presence_matrix.keys()
+    
+    print("DAY - "+str(day))
+    print(presence_matrix.keys())
+    print(len(presence_matrix[bssids[0]]))
+    print(len(transitions),transitions)
+    
+    # fingerprint[i] - shows fingerprint of locations i. It is presented ad dictionary of bssids with 0 or 1
+    fingerprints = []
+    # predominance[i][bssid] = [m, n] - for location i for bssid keeps number (m) of 0 values and number (n) of 1 values encountered
+    predominance = []
+    for i in range(0,max(transitions)+1):
+        newfdict = dict()
+        fingerprints.append(newfdict)
+        for bssid in bssids:
+            fingerprints[i][bssid] = -1
+
+        newpdict = dict()
+        predominance.append(newpdict)
+        for bssid in bssids:
+            predominance[i][bssid] = [0, 0] # initially 0 encounters for both 1 and 0
+    
+    for bin in range(0,len(transitions)):
+        for bssid in bssids:
+            #            location          bssid  value 0 or 1 at pos bin in pres matrix for bssid
+            predominance[transitions[bin]][bssid][presence_matrix[bssid][bin]] = predominance[transitions[bin]][bssid][presence_matrix[bssid][bin]] + 1
+            
+    for x in range(0, max(transitions)+1):
+        for bssid in bssids:
+            if predominance[x][bssid][0]>predominance[x][bssid][1]:
+                fingerprints[x][bssid] = 0
+            else:
+                fingerprints[x][bssid] = 1
+        print("LOCATION "+str(x))
+        print(fingerprints[x])
+    return fingerprints

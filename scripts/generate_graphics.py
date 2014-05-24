@@ -13,8 +13,8 @@ from graphics import plot_kmeans_locations
 from graphics import plot_bssid_rssi
 #user_list = [1,2,3,6,9,15,17,18,40]
 user_list = [6]
-start_day = 2
-days_to_consider = 3
+start_day = 0
+days_to_consider = 2
 n_best_signal_bssids = -1 
 m_most_popular_bssids = -1
 max_in_legend = 10
