@@ -8,6 +8,7 @@ import sys
 sys.path.append( ".." )
 
 from handlers import match_handler
+from handlers import user_data_handler
 
 user_list = [6]
 start_day = 0
@@ -37,7 +38,7 @@ for user in user_list:
     
     # get the associations
     associations = match_handler.make_location_associations(user_file, start_day, days_to_consider, step, threshold)
-    print(associations[0])
+    #print(associations[0])
 #     print("HERE")
 #     crt = 0
 #     for elem in associations[0]:
@@ -50,4 +51,10 @@ for user in user_list:
 #         crt = crt +1    
 
     # make transitions for all given days considering the location associations that have been identified
+    combined_locations = match_handler.combine_locations_with_correct_associations(user_file, start_day, days_to_consider, step, associations)
     
+    # plot
+#     user_data = user_data_handler.retrieve_data_from_user(user_file,start_day,days_to_consider)    
+#     start_time = user_data[0][1]
+#     end_time = user_data[len(user_data)-1][1]
+    #NOT WORKINGmatch_handler.plot_combined_transitions(user_file, time_bin, start_day, days_to_consider, step, plot_interval, start_time,end_time)

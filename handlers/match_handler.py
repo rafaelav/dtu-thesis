@@ -34,6 +34,12 @@ def save_transitions(user_file, day, days_to_consider, transitions):
     
     # save transitions for currentd day
     pickle.dump(transitions, open(transitions_file, "wb"))    
+
+def save_combined_transitions(user_file, start_day, days_to_consider, step, combined_transitions):
+    combined_transitions_file = base+user_file+"/"+"star_day_"+str(start_day)+"_step_"+str(step)+"_days_"+str(days_to_consider)+"_combined_transitions.p"
+    
+    # save transitions for currentd day
+    pickle.dump(combined_transitions, open(combined_transitions_file, "wb"))    
         
 def create_transition_array(user_file, day, days_to_consider, m_most_popular_bssids,time_bin, iterations, min_loc, max_loc):
     pickled_matrix_file = base+user_file+"/"+"day_"+str(day)+"_count_"+str(days_to_consider)+"_pickled_presence_matrix.p"
@@ -105,7 +111,7 @@ def pickle_presence_matrix(user_file, start_day, days_to_consider, time_bin, m_m
     else:
         print("NOT TRATING CASE WITH LESS BSSIDS")
     print("Pickled")
-
+    
 def extract_fingerprints_for_locations(transitions_file, presence_matrix_file, day):
     """ For each location we look for each bssid at their presence during the times
     that location has been spotted. If mostly a bssid is spotted during that time 
@@ -284,7 +290,7 @@ def make_location_associations(user_file, start_day, days_to_consider, step, thr
     has been previously found, the fingerprint is for the location that just has been found) 
     """
     associations = dict()
-    for day in range(start_day,days_to_consider):
+    for day in range(start_day, start_day+days_to_consider,step):
         newlist = [] 
         #associations.append(newlist)
         associations[day]=newlist
@@ -299,4 +305,42 @@ def make_location_associations(user_file, start_day, days_to_consider, step, thr
             continue
         
         next_location, associations[day] = add_to_assiciation_dictionary(fingerprints, next_location, associations, day, start_day, threshold)
-    return associations    
+    return associations   
+
+def transform_transitions(transitions, association):
+    new_transitions = []
+    for bin in range(0,len(transitions)):
+        new_transitions.append(association[transitions[bin]][0])
+#     for loc in range(0,max(transitions)+1):
+#         print(loc,association[loc][0])
+#     print("HERE")
+#     print("old",transitions)
+#     print("new",new_transitions)
+    return new_transitions
+
+def combine_locations_with_correct_associations(user_file, start_day, days_to_consider, step, associations):
+    new_transitions = dict()
+    for day in range(start_day, start_day+days_to_consider,step):
+        # extarct original transitions
+        transitions_file = base+user_file+"/"+"day_"+str(day)+"_count_"+str(step)+"_transitions.p"
+        transitions = location_data_handler.load_pickled_file(transitions_file)
+        new_transitions[day] = transform_transitions(transitions, associations[day])
+    
+    # combining them
+    combined_transitions = []
+    for day in range(start_day, start_day+days_to_consider,step):
+        combined_transitions = combined_transitions + new_transitions[day]
+    
+    # save it
+    save_combined_transitions(user_file, start_day, days_to_consider, step, combined_transitions)
+    
+    return combined_transitions
+
+# NOT WORKING
+def plot_combined_transitions(user_file, time_bin, start_day, days_to_consider, step, plot_interval, start_time,end_time):
+    combined_transitions_file = base+user_file+"/"+"star_day_"+str(start_day)+"_step_"+str(step)+"_days_"+str(days_to_consider)+"_combined_transitions.p"
+    combined_transitions = location_data_handler.load_pickled_file(combined_transitions_file)
+    
+    file_path = base+user_file+"/"+"combined_locations_start_day_"+str(start_day)+"_step_"+str(step)+"_days_"+str(days_to_consider)+"_plot.p"
+    
+    plot_transitions(user_file, days_to_consider, max(combined_transitions)+1, combined_transitions, time_bin, start_time, end_time, plot_interval, file_path)

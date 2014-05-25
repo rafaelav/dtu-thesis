@@ -233,3 +233,6 @@ for elem in associations[1]:
     crt = crt +1
     
 print(trans_1)
+
+smth = location_data_handler.load_pickled_file(base+user_file+"/"+"day_"+str(0)+"_count_"+str(1)+"_transitions.p")
+print("smth",smth)
