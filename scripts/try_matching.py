@@ -44,10 +44,10 @@ def extract_fingerprints_for_locations(transitions_file, presence_matrix_file, d
     
     bssids = presence_matrix.keys()
     
-    print("DAY - "+str(day))
-    print(presence_matrix.keys())
-    print(len(presence_matrix[bssids[0]]))
-    print(len(transitions),transitions)
+#     print("DAY - "+str(day))
+#     print(presence_matrix.keys())
+#     print(len(presence_matrix[bssids[0]]))
+#     print(len(transitions),transitions)
     
     # fingerprint[i] - shows fingerprint of locations i. It is presented ad dictionary of bssids with 0 or 1
     fingerprints = []
@@ -66,7 +66,7 @@ def extract_fingerprints_for_locations(transitions_file, presence_matrix_file, d
     
     for bin in range(0,len(transitions)):
         for bssid in bssids:
-            #            location          bssid  value 0 or 1 at pos bin in pres matrix for bssid
+            #            location          bssid  value 0 or 1 at pos bin in pres matrix for bssid            
             predominance[transitions[bin]][bssid][presence_matrix[bssid][bin]] = predominance[transitions[bin]][bssid][presence_matrix[bssid][bin]] + 1
             
     for x in range(0, max(transitions)+1):
@@ -77,33 +77,93 @@ def extract_fingerprints_for_locations(transitions_file, presence_matrix_file, d
                 fingerprints[x][bssid] = 1
         print("LOCATION "+str(x))
         print(fingerprints[x])
+        
+#     print("Predominance for "+str(bssids[0])+" location 0")
+#     print(predominance[1][bssids[0]])
+#     apps = []
+#     for bin in range(0,len(transitions)):
+#         if transitions[bin]==1:
+#             apps.append(presence_matrix[bssid][bin])
+#     print("Original 1,0 markers for "+str(bssids[0])+" location 0")
+#     print(apps)
+#     print("Fingerprint")
+#     print(fingerprints[1][bssids[0]])
+    
     return fingerprints
 
-def get_similarity(dict_a, dict_b):
+def get_similarity_divided_to_common_bssids(dict_a, dict_b):
     similarity_ab = 0
+    common_ab = 0
     for key in dict_a:
         if key in dict_b: # bssid in both dictionaries
+            print(key, dict_a[key], dict_b[key])
+            common_ab = common_ab + 1
             if dict_a[key]==dict_b[key]: # and the key is the same
                 similarity_ab = similarity_ab + 1 # we increment similarity 
-    similarity_ab = (similarity_ab + 0.0) / len(dict_a.keys())
-    print(similarity_ab)
+    #similarity_ab = (similarity_ab + 0.0) / len(dict_a.keys())
+    similarity_ab = (similarity_ab + 0.0) / common_ab
+    print("ab",similarity_ab)
 
     similarity_ba = 0
+    common_ba = 0
     for key in dict_b:
         if key in dict_a: # bssid in both dictionaries
+            common_ba = common_ba + 1
             if dict_a[key]==dict_b[key]: # and the key is the same
                 similarity_ba = similarity_ba + 1 # we increment similarity 
-    similarity_ba = (similarity_ba + 0.0) / len(dict_b.keys())
-    print(similarity_ba)
+    #similarity_ba = (similarity_ba + 0.0) / len(dict_b.keys())
+    similarity_ba = (similarity_ba + 0.0) / common_ba
+    print("ba",similarity_ba)
     
     similarity = (similarity_ab + similarity_ba)/2.0
-    print(similarity)
+    print("sim",similarity)
     
+    return similarity
+
+def get_similarity_reunion_bssids(dict_a, dict_b):
+    dict_a_modified = dict()
+    dict_b_modified = dict()
+    #print("A,B",len(dict_a.keys()),len(dict_b.keys()))
+    
+    for key in dict_a:
+        if key not in dict_a_modified:
+            dict_a_modified[key] = 0
+        if key not in dict_b_modified:
+            dict_b_modified[key] = 0
+
+    for key in dict_b:
+        if key not in dict_a_modified:
+            dict_a_modified[key] = 0
+        if key not in dict_b_modified:
+            dict_b_modified[key] = 0
+                
+    for key in dict_a:
+        if dict_a[key] == 1:
+            dict_a_modified[key] = 1
+
+    for key in dict_b:
+        if dict_b[key] == 1:
+            dict_b_modified[key] = 1
+    
+#     print(len(dict_a_modified.keys()), len(dict_b_modified.keys()))
+#     for key in dict_a_modified:
+#         if key not in dict_b_modified:
+#             print("ERROR")
+#     for key in dict_b_modified:
+#         if key not in dict_a_modified:
+#             print("ERROR")                              
+                                          
+    similarity = 0
+    for key in dict_a_modified:
+        if dict_a_modified[key]==dict_b_modified[key]: # and the key is the same
+            similarity = similarity + 1 # we increment similarity 
+    similarity = (similarity + 0.0) / len(dict_a_modified.keys())
+        
     return similarity
 
 def start_association_dictionary(fingerprints):
     next_location = len(fingerprints)
-    print(next_location)
+    #print(next_location)
     
     association = []
     for loc in range(0,len(fingerprints)):
@@ -111,7 +171,7 @@ def start_association_dictionary(fingerprints):
     
     return next_location,association
 
-THR = 0.90
+THR = 0.95
 def add_to_assiciation_dictionary(fingerprints, next_location, previos_associations, crt_day):
     association = []
     # for each location in crt day (and its fingerprint)
@@ -122,7 +182,7 @@ def add_to_assiciation_dictionary(fingerprints, next_location, previos_associati
             # for fingerprints of locations
             for element in previos_associations[prev_day]:
                 # and calculate the similarty 
-                similarity = get_similarity(element[1],fingerprints[loc]) # fingerprint of previous location and fingerprint of location in crt day
+                similarity = get_similarity_reunion_bssids(element[1],fingerprints[loc]) # fingerprint of previous location and fingerprint of location in crt day
                 # if the similarity is above a threshold 
                 if similarity >= THR:
                     found = True # we said we found something similar
