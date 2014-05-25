@@ -163,22 +163,22 @@ def get_similarity_reunion_bssids(dict_a, dict_b):
 
 def start_association_dictionary(fingerprints):
     next_location = len(fingerprints)
-    #print(next_location)
+    print(next_location)
     
     association = []
     for loc in range(0,len(fingerprints)):
         association.append((loc, fingerprints[loc])) # location name (e.g. 0), fingerprint for location
-    
+    print("will return",association)
     return next_location,association
 
 THR = 0.95
-def add_to_assiciation_dictionary(fingerprints, next_location, previos_associations, crt_day):
+def add_to_assiciation_dictionary(fingerprints, next_location, previos_associations, crt_day, start_day):
     association = []
     # for each location in crt day (and its fingerprint)
     for loc in range(0,len(fingerprints)):
         found = False
         # we look in all previous days
-        for prev_day in range(0, crt_day):
+        for prev_day in range(start_day, crt_day):
             # for fingerprints of locations
             for element in previos_associations[prev_day]:
                 # and calculate the similarty 
@@ -198,22 +198,27 @@ def add_to_assiciation_dictionary(fingerprints, next_location, previos_associati
         print("ERROR - NOT ALL LOCATIONS HAVE ASSOCIATIONS")
     return next_location, association
 
-associations = []
+associations = dict()
 next_location = -1
-for day in range(0,days_to_consider):
-    newlist = []
-    associations.append(newlist)
+start_day = 0
+days_to_consider = 2
+for day in range(start_day,days_to_consider):
+    newlist = [] 
+    #associations.append(newlist)
+    associations[day]=newlist
     presence_matrix_file = base+user_file+"/"+"day_"+str(day)+"_count_"+str(step)+"_pickled_presence_matrix.p"
     transitions_file = base+user_file+"/"+"day_"+str(day)+"_count_"+str(step)+"_transitions.p"
+    if day == 1:
+        trans_1 = location_data_handler.load_pickled_file(transitions_file)
 
     fingerprints = extract_fingerprints_for_locations(transitions_file, presence_matrix_file, day)
 
-    if day == 0:
+    if day == start_day:
         next_location, associations[day] = start_association_dictionary(fingerprints)
 #        print(associations[day])
         continue
     
-    next_location, associations[day] = add_to_assiciation_dictionary(fingerprints, next_location, associations, day)
+    next_location, associations[day] = add_to_assiciation_dictionary(fingerprints, next_location, associations, day, start_day)
 
 print(len(associations[0]))
 print(len(associations[1]))
@@ -226,3 +231,5 @@ crt = 0
 for elem in associations[1]:
     print("day 1, location "+str(crt),elem[0])
     crt = crt +1
+    
+print(trans_1)
