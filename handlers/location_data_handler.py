@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import datetime
 week   = {0:'Mon', 1:'Tue', 2:'Wed', 3:'Thu',  4:'Fri', 5:'Sat', 6:'Sun'}
 
-
+DAY_INTERVAL_SECS = 24 * 60 * 60
 SECS_IN_MINUTE = 60
 
 def get_utc_from_epoch(epoch_time):
@@ -144,7 +144,8 @@ def prepare_data(user_file, start_day, days_to_consider, m_most_popular_bssids):
     # get data from file
     user_data = user_data_handler.retrieve_data_from_user(user_file,start_day,days_to_consider)    
     start_time = user_data[0][1]
-    end_time = user_data[len(user_data)-1][1]
+    #end_time = user_data[len(user_data)-1][1]
+    end_time = start_time + days_to_consider * DAY_INTERVAL_SECS
     
     most_common_bssids = user_data_handler.get_most_common_bssids(user_data, m_most_popular_bssids)
     bssid_times_and_rssis = user_data_handler.get_bssid_info_from_data(user_data, most_common_bssids)

@@ -7,6 +7,8 @@ import sys
 sys.path.append( ".." )
 from handlers import user_data_handler
 from scripts import polaris
+from handlers import match_handler
+from handlers import location_data_handler
     
 def testing_data_import():
     print("in testing data",1)
@@ -171,6 +173,18 @@ def testing_get_data():
 
 #testing_get_data()
 
+def testing_combination(filename):
+    transitions = location_data_handler.load_pickled_file(filename)
+    print(len(transitions))
+    print((24*60*30)/5)
+    print(max(transitions))
+
+filename = "../../plots/user_6_sorted/star_day_0_step_1_days_30_combined_transitions.p"
+testing_combination(filename)
+# for i in range(0,30):
+#     filename = "../../plots/user_6_sorted/day_"+str(i)+"_count_1_transitions.p"
+#     testing_combination(filename, i)
+    
 
     
     

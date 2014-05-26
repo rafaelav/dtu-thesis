@@ -15,6 +15,7 @@ K = 10
 # final variable
 base = "../../plots/"
 LOC_TYPE = "hmm"
+DAY_INTERVAL_SECS = 24 * 60 * 60
 
 def calculate_transitions_over_time(user_file, start_day, days_count, step, m_most_popular_bssids, time_bin, plot_interval, iterations, min_loc, max_loc):
     days_to_consider = step # always process step days at the time
@@ -46,7 +47,8 @@ def create_transition_array(user_file, day, days_to_consider, m_most_popular_bss
 
     user_data = user_data_handler.retrieve_data_from_user(user_file,day,days_to_consider)    
     start_time = user_data[0][1]
-    end_time = user_data[len(user_data)-1][1]
+    #end_time = user_data[len(user_data)-1][1]
+    end_time = start_time + days_to_consider * DAY_INTERVAL_SECS
     
     # only re-calculate presence matrxi and pickle it if it doens't already exist
     if not os.path.isfile(pickled_matrix_file):
