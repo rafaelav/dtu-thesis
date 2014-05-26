@@ -12,7 +12,7 @@ from handlers import user_data_handler
 
 user_list = [6]
 start_day = 0
-days_to_consider = 2 # in total
+days_to_consider = 30 # in total
 n_best_signal_bssids = -1 
 m_most_popular_bssids = -1
 max_in_legend = 10
@@ -28,16 +28,15 @@ for user in user_list:
     user_file = "user_"+str(user)+"_sorted"
     # generate transition files for given days
     
-#     start_moment = datetime.datetime.now()
-#     
-#     print("Creating transitions for ",user_file)
-#     match_handler.calculate_transitions_over_time(user_file, start_day, days_to_consider, step, m_most_popular_bssids, time_bin, plot_interval, iterations, min_loc, max_loc)
-# 
-#     print("Start time: "+str(start_moment))
-#     print("End time: "+str(datetime.datetime.now()))
-    
+    start_moment = datetime.datetime.now()
+     
+    print("Creating transitions for ",user_file)
+    match_handler.calculate_transitions_over_time(user_file, start_day, days_to_consider, step, m_most_popular_bssids, time_bin, plot_interval, iterations, min_loc, max_loc)
+    end_transitions = datetime.datetime.now()
+        
     # get the associations
     associations = match_handler.make_location_associations(user_file, start_day, days_to_consider, step, threshold)
+    end_associations = datetime.datetime.now()
     #print(associations[0])
 #     print("HERE")
 #     crt = 0
@@ -52,6 +51,12 @@ for user in user_list:
 
     # make transitions for all given days considering the location associations that have been identified
     combined_locations = match_handler.combine_locations_with_correct_associations(user_file, start_day, days_to_consider, step, associations)
+    end_combining = datetime.datetime.now()
+
+    print("Start time: "+str(start_moment))
+    print("End time creating transitions: "+str(datetime.datetime.now()))
+    print("End time creating associations: "+str(datetime.datetime.now()))
+    print("End time creating combinations: "+str(datetime.datetime.now()))
     
     # plot
 #     user_data = user_data_handler.retrieve_data_from_user(user_file,start_day,days_to_consider)    
