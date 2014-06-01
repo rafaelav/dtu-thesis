@@ -22,7 +22,7 @@ iterations = 10 # number of times it runs hmm before trying to figure out best e
 step = 1 # number of days to consider in one interval
 min_loc = 2
 max_loc = 10
-threshold = 0.98
+threshold = 0.95
 
 for user in user_list:
     user_file = "user_"+str(user)+"_sorted"

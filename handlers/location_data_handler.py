@@ -255,6 +255,14 @@ def estimate_locations_k_fold_cross_validation(K, matrix, min_loc, max_loc, loc_
     print(max_score, estimated_locations)
     return estimated_locations, transitions    
 
+def get_locations_found(loc_over_time_list):
+    """
+    Receives a list of x values. Value at position i represent the location identified at time bin i.
+    Returns the maximum + 1 number found (which represents the number of locations identified in the list) 
+    """
+    
+    locations = max(loc_over_time_list) + 1
+    return locations
 # def state_transitions_kmeans(matrix, loc_count):
 #     n_clusters=loc_count
 #     init='k-means++'
