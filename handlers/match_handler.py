@@ -186,7 +186,7 @@ def add_to_assiciation_dictionary(fingerprints, next_location, previos_associati
             # for fingerprints of locations
             for element in previos_associations[prev_day]:
                 # and calculate the similarty 
-                similarity = get_similarity_reunion_bssids(element[1],fingerprints[loc]) # fingerprint of previous location and fingerprint of location in crt day
+                similarity = get_similarity_common_bssids_and_active_bssid(element[1],fingerprints[loc]) # fingerprint of previous location and fingerprint of location in crt day
                 # if the similarity is above a threshold 
                 if similarity >= THR:
                     found = True # we said we found something similar
@@ -268,6 +268,73 @@ def get_similarity_reunion_bssids(dict_a, dict_b):
         if dict_b[key] == 1:
             dict_b_modified[key] = 1
     
+#     print(len(dict_a_modified.keys()), len(dict_b_modified.keys()))
+#     for key in dict_a_modified:
+#         if key not in dict_b_modified:
+#             print("ERROR")
+#     for key in dict_b_modified:
+#         if key not in dict_a_modified:
+#             print("ERROR")                              
+                                          
+    similarity = 0
+    for key in dict_a_modified:
+        if dict_a_modified[key]==dict_b_modified[key]: # and the key is the same
+            similarity = similarity + 1 # we increment similarity 
+    similarity = (similarity + 0.0) / len(dict_a_modified.keys())
+        
+    return similarity
+
+def get_similarity_common_bssids_and_active_bssid(dict_a, dict_b):
+    """
+    A reunion of only the bssids that are 1 in either a or b and the bssids that exist in both a and b 
+    (can also be 0) is calculated. The similarity is calculated as the number of bssids in this reunion 
+    that have the same presence associated for both a and b divided to the total number of these bssids 
+    (same in a and b).
+    """
+    # if all keys in a and b have 0 associated to it then they are the NONE location
+    onlyZeros = True
+    for key in dict_a:
+        if dict_a[key] == 1:
+            onlyZeros = False
+
+    for key in dict_b:
+        if dict_b[key] == 1:
+            onlyZeros = False
+    if onlyZeros == True:
+        return 1
+    
+    # else
+    dict_a_modified = dict()
+    dict_b_modified = dict()
+    #print("A,B",len(dict_a.keys()),len(dict_b.keys()))
+    
+    for key in dict_a:
+        if dict_a[key] == 1:            
+            dict_a_modified[key] = 1
+            if key in dict_b:
+                dict_b_modified[key] = dict_b[key]
+            else:
+                dict_b_modified[key] = 0
+        else:
+            if key in dict_b:
+                dict_a_modified[key] = 0
+                dict_b_modified[key] = dict_b[key]
+
+    for key in dict_b:
+        if key not in dict_b_modified:
+            if dict_b[key] == 1:            
+                dict_b_modified[key] = 1
+                if key in dict_a:
+                    dict_a_modified[key] = dict_a[key]
+                else:
+                    dict_a_modified[key] = 0
+            else:
+                if key in dict_a:
+                    dict_b_modified[key] = 0
+                    dict_a_modified[key] = dict_a[key]
+                
+    if len(dict_a_modified.keys()) != len(dict_b_modified.keys()):
+        print("ERROR")
 #     print(len(dict_a_modified.keys()), len(dict_b_modified.keys()))
 #     for key in dict_a_modified:
 #         if key not in dict_b_modified:
