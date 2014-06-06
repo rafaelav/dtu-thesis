@@ -237,6 +237,7 @@ def get_similarity_divided_to_common_bssids(dict_a, dict_b):
     
     return similarity
 
+#NOT USED
 def get_similarity_reunion_bssids(dict_a, dict_b):
     """A reunion for bssids from both A and B is calculated. In case a bssid is not in A or B but it is 
     in the reunion, than the presence value attributed for it is 0. In case a bssid is in A or B and

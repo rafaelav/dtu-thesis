@@ -7,6 +7,7 @@ import sys
 sys.path.append( ".." )
 from handlers import location_data_handler
 from math import log
+import sympy
 
 BINS_PER_DAY = 288 #5 min time bins
 
@@ -109,11 +110,20 @@ def get_probability_of_individual_apparition_over_days(loc, loc_over_time_list, 
 
     return probability
 
-my_list = location_data_handler.load_pickled_file("../../plots/user_6_sorted/star_day_0_step_1_days_30_combined_transitions.p")
-print(my_list)
-#prob = get_probability_of_individual_apparition_over_days(3, my_list,1)
-#print(prob)
-tu_entr = temporal_uncorrelated_entropy("user_6_sorted", my_list, 1, "app_loc")
-print(tu_entr)
-rand_entr = random_entropy("user_6_sorted", my_list)
-print(rand_entr)
+def get_max_predictability(S, N):
+    x=sympy.Symbol('x')
+    a=sympy.Symbol('a')
+    #print(sympy.solve(2*x+1))
+    print(sympy.solve((-1)*x*log(x,2)-(1-x)*log((1-x),2)+(1-x)*log((N-1),2)-S))
+    #print(sympy.solve(log(a**(-3) - x**2)/a, x))
+    #print(sympy.solve(pow(N-1,1-x)/(pow(2,S)*x*pow(1-x,1-x)) - 1))
+
+# my_list = location_data_handler.load_pickled_file("../../plots/user_6_sorted/star_day_0_step_1_days_30_combined_transitions.p")
+# print(my_list)
+# #prob = get_probability_of_individual_apparition_over_days(3, my_list,1)
+# #print(prob)
+# tu_entr = temporal_uncorrelated_entropy("user_6_sorted", my_list, 1, "app_loc")
+# print(tu_entr)
+# rand_entr = random_entropy("user_6_sorted", my_list)
+# print(rand_entr)
+get_max_predictability(0.8, 2)

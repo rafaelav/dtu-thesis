@@ -22,7 +22,7 @@ iterations = 10 # number of times it runs hmm before trying to figure out best e
 step = 1 # number of days to consider in one interval
 min_loc = 2
 max_loc = 10
-threshold = 0.95
+threshold = 0.80
 
 for user in user_list:
     user_file = "user_"+str(user)+"_sorted"
@@ -31,12 +31,13 @@ for user in user_list:
     start_moment = datetime.datetime.now()
      
     print("Creating transitions for ",user_file)
-    match_handler.calculate_transitions_over_time(user_file, start_day, days_to_consider, step, m_most_popular_bssids, time_bin, plot_interval, iterations, min_loc, max_loc)
-    end_transitions = datetime.datetime.now()
+    #match_handler.calculate_transitions_over_time(user_file, start_day, days_to_consider, step, m_most_popular_bssids, time_bin, plot_interval, iterations, min_loc, max_loc)
+    #end_transitions = datetime.datetime.now()
         
     # get the associations
     associations = match_handler.make_location_associations(user_file, start_day, days_to_consider, step, threshold)
     end_associations = datetime.datetime.now()
+    
     #print(associations[0])
 #     print("HERE")
 #     crt = 0
@@ -53,6 +54,9 @@ for user in user_list:
     combined_locations = match_handler.combine_locations_with_correct_associations(user_file, start_day, days_to_consider, step, associations)
     end_combining = datetime.datetime.now()
 
+    print(combined_locations)
+    print(max(combined_locations))
+    
     print("Start time: "+str(start_moment))
     print("End time creating transitions: "+str(datetime.datetime.now()))
     print("End time creating associations: "+str(datetime.datetime.now()))

@@ -15,6 +15,7 @@ week   = {0:'Mon', 1:'Tue', 2:'Wed', 3:'Thu',  4:'Fri', 5:'Sat', 6:'Sun'}
 
 SECS_IN_MINUTE = 60
 MAX_BSSID_IN_PLOT = 50
+DAY_INTERVAL_SECS = 24 * 60 * 60
 
 def start_plot_presence (user_list, start_day, days_to_consider, n_best_signal_bssids, m_most_popular_bssids, time_bin, plot_interval):
     for user in user_list:
@@ -199,7 +200,7 @@ def bssid_without_rssi_strength_plot(user_file, start_day, days_to_consider, m_m
     # prepare needed data
     user_data, bssid_times_and_rssis_dict, color_dict = prepare_data_for_bssid_without_rssi_strength(user_file, start_day, days_to_consider, m_most_popular_bssids)
     start_time = user_data[0][1]
-    end_time = user_data[len(user_data)-1][1]
+    end_time = start_time + days_to_consider * DAY_INTERVAL_SECS#user_data[len(user_data)-1][1]
 
     # get matrix
     matrix_presence_on_rows, column_elements =  get_bssid_presence_matrix(user_file, start_time, end_time, bssid_times_and_rssis_dict, time_bin)
