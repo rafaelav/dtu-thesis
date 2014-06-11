@@ -408,7 +408,7 @@ def combine_locations_with_correct_associations(user_file, start_day, days_to_co
 
 # NOT WORKING
 def plot_combined_transitions(user_file, time_bin, start_day, days_to_consider, step, plot_interval, start_time,end_time):
-    combined_transitions_file = base+user_file+"/"+"star_day_"+str(start_day)+"_step_"+str(step)+"_days_"+str(days_to_consider)+"_combined_transitions.p"
+    combined_transitions_file = base+user_file+"/"+"start_day_"+str(start_day)+"_step_"+str(step)+"_days_"+str(days_to_consider)+"_combined_transitions.p"
     combined_transitions = location_data_handler.load_pickled_file(combined_transitions_file)
     
     file_path = base+user_file+"/"+"combined_locations_start_day_"+str(start_day)+"_step_"+str(step)+"_days_"+str(days_to_consider)+"_plot.p"

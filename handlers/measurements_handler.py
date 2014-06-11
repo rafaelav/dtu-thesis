@@ -6,8 +6,9 @@ Created on Jun 1, 2014
 import sys
 sys.path.append( ".." )
 from handlers import location_data_handler
+#from sympy import log
 from math import log
-import sympy
+import sympy as sy
 
 BINS_PER_DAY = 288 #5 min time bins
 
@@ -109,13 +110,31 @@ def get_probability_of_individual_apparition_over_days(loc, loc_over_time_list, 
     probability = (probability+0.0)/no_of_days
 
     return probability
-
 def get_max_predictability(S, N):
-    x=sympy.Symbol('x')
-    a=sympy.Symbol('a')
-    #print(sympy.solve(2*x+1))
-    print(sympy.solve((-1)*x*log(x,2)-(1-x)*log((1-x),2)+(1-x)*log((N-1),2)-S))
-    #print(sympy.solve(log(a**(-3) - x**2)/a, x))
+#     x=sy.Symbol('x')
+#     eq = (-1)*x*log(x,2)-(1-x)*log((1-x),2)+(1-x)*log((N-1),2)-S
+#     print(sy.solve(logcombine(eq, force=True)))
+
+    # predictability can only be a number between 0 and 1
+    x = 0.99
+    closest_val = 1000
+    result = x
+    while x >= 0:
+        if 1-x<0:
+            print(x)
+        difference = abs((-1)*x*log(x,2)-(1-x)*log((1-x),2)+(1-x)*log((N-1),2)-S)
+        print("For "+str(x)+" dif is "+str(difference)+" crt closest val "+str(closest_val)+" result: "+str(result))
+        if difference < closest_val:
+            closest_val = difference
+            result = x
+        x = x - 0.01
+    result = result * 100 
+    if result % 10 == 9:
+        result = (result + 1.0)/100
+    else:
+        result = (result +0.0)/100
+        
+    print(result, closest_val)
     #print(sympy.solve(pow(N-1,1-x)/(pow(2,S)*x*pow(1-x,1-x)) - 1))
 
 # my_list = location_data_handler.load_pickled_file("../../plots/user_6_sorted/star_day_0_step_1_days_30_combined_transitions.p")
@@ -126,4 +145,4 @@ def get_max_predictability(S, N):
 # print(tu_entr)
 # rand_entr = random_entropy("user_6_sorted", my_list)
 # print(rand_entr)
-get_max_predictability(0.8, 2)
+get_max_predictability(0.8, 50)
