@@ -8,7 +8,7 @@ sys.path.append( ".." )
 from handlers import location_statistics
 
 base = "../../plots/_general_plots/"
-user_list = [4,6,7,11,14,17,19,20]
+user_list = [4,6,7,11,14,17,19,20,24,25,27]
 
 # get locations information from user list
 loc_users_dict = location_statistics.prepare_data(user_list)
