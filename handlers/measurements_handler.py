@@ -12,6 +12,56 @@ import sympy as sy
 
 BINS_PER_DAY = 288 #5 min time bins
 
+def get_number_of_possible_intervals(sequence_len, number_of_elements):
+    return number_of_elements - sequence_len + 1
+
+def build_sequence(sequence_len, start_pos, loc_over_time_list):
+    print(start_pos,sequence_len)
+    return loc_over_time_list[start_pos, sequence_len+start_pos]
+
+def actual_entropy_with_bins(user_filename, loc_over_time_list, no_of_days):
+    result = 0
+    print("For user: "+user_filename)
+    
+#    min_sequence_length = 1
+#    max_sequence_length = BINS_PER_DAY * no_of_days
+
+    min_sequence_length = 2
+    max_sequence_length = 3    
+    
+    for sequence_len in range(min_sequence_length, max_sequence_length):
+        list_found_sequences = []
+        list_count_apparitions_of_sequences = []
+        
+        start_pos = 0
+        
+        while start_pos+sequence_len <= len(loc_over_time_list):
+            sequence = build_sequence(sequence_len, start_pos, loc_over_time_list)
+            print("Start seq: "+str(start_pos)+" Int len: "+str(sequence_len))
+            print(" Seq: ",sequence)
+            if sequence in list_found_sequences:
+                list_count_apparitions_of_sequences[list_found_sequences.index(sequence)] += 1 
+            else:
+                list_found_sequences.append(sequence)
+                list_count_apparitions_of_sequences.append(0)
+            
+        intervals_count = get_number_of_possible_intervals(sequence_len, len(loc_over_time_list))
+        print("Number of possible intervals: "+str(intervals_count))
+        
+        print("Found sequences and the number of times they appeared ")
+        print(list_found_sequences)
+        print(list_count_apparitions_of_sequences)
+        
+        crt = 0
+        for x in list_found_sequences:
+            probability = list_count_apparitions_of_sequences[crt]/intervals_count
+            result = result - probability*log(probability,2)
+    
+    print("Result: ", result)
+    return result
+        
+            
+
 def random_entropy(user_filename, loc_over_time_list):
     loc_count = location_data_handler.get_locations_found(loc_over_time_list)
     rand_entropy = log(loc_count,2)
@@ -145,4 +195,7 @@ def get_max_predictability(S, N):
 # print(tu_entr)
 # rand_entr = random_entropy("user_6_sorted", my_list)
 # print(rand_entr)
-get_max_predictability(0.8, 50)
+
+#get_max_predictability(0.8, 50)
+
+actual_entropy_with_bins("test", [1,2,3,4,1,2,3,1,2], 1)
