@@ -121,7 +121,7 @@ def actual_entropy_with_combined_bins(user_filename, loc_over_time_list, no_of_d
     bins are 5 mins long) and attributing the location that mostly appeares in them.
     """
     #print(loc_over_time_list)
-    loc_over_time_list = convert_to_combined_bins(loc_over_time_list, bins_per_day)
+    #loc_over_time_list = convert_to_combined_bins(loc_over_time_list, bins_per_day)
     #print(loc_over_time_list)
     
     result = 0
@@ -129,6 +129,9 @@ def actual_entropy_with_combined_bins(user_filename, loc_over_time_list, no_of_d
     
     min_sequence_length = 1
     max_sequence_length = max_previous#bins_per_day * no_of_days
+
+    prev_list_found_sequences = []
+    prev_list_count_apparitions_of_sequences = [] 
     
     entropies=dict()
     for sequence_len in range(min_sequence_length, max_sequence_length):
@@ -155,6 +158,7 @@ def actual_entropy_with_combined_bins(user_filename, loc_over_time_list, no_of_d
 #             no_aps = no_aps + ap
             
         intervals_count = get_number_of_possible_intervals(sequence_len, len(loc_over_time_list))
+
 #         if no_aps != intervals_count:
 #             print("ERROR")
 #             return
@@ -168,14 +172,23 @@ def actual_entropy_with_combined_bins(user_filename, loc_over_time_list, no_of_d
         crt = 0
         for x in list_found_sequences:
             probability = (list_count_apparitions_of_sequences[crt]+0.0)/intervals_count
+            #print(x, probability)
+            if sequence_len > 1:
+                prefix = x[:-1]
+                probability_prefix=(prev_list_count_apparitions_of_sequences[prev_list_found_sequences.index(prefix)]+0.0)/intervals_count 
+            else:
+                probability_prefix = 1 
             #print("probability: ",probability)
             #print(probability*log(probability,2),probability,list_count_apparitions_of_sequences[crt],x)
             #print(log(probability,2))
             result = result - probability*log(probability,2)
-            entropies[sequence_len] = entropies[sequence_len] - probability*log(probability,2)
+            entropies[sequence_len] = entropies[sequence_len] - probability*log(probability/probability_prefix,2)
             #print(probability*log(probability,2))
             crt = crt + 1
         #print("Partial result: "+str(result))
+        
+        prev_list_found_sequences = list_found_sequences
+        prev_list_count_apparitions_of_sequences = list_count_apparitions_of_sequences 
 
     print(entropies)
     minimum_entropy = entropies[1]
@@ -252,6 +265,7 @@ def get_probability_of_apparition_over_bins(loc, loc_over_time_list):
     
     #print(probability, len(loc_over_time_list))
     probability = (probability+0.0)/len(loc_over_time_list)
+    #print(loc, probability)
     
     return probability
 
@@ -326,11 +340,11 @@ def get_max_predictability(S, N):
 
 #get_max_predictability(0.8, 50)
 
-my_list = location_data_handler.load_pickled_file("../../plots/user_19_sorted/star_day_0_step_1_days_30_combined_transitions.p")
+#my_list = location_data_handler.load_pickled_file("../../plots/user_19_sorted/star_day_0_step_1_days_30_combined_transitions.p")
 #actual_entropy_with_bins("test", my_list, 30)
 
-#my_list = location_data_handler.load_pickled_file("../../plots/user_6_sorted/day_1_count_1_transitions.p")
-#my_list = [1,2,3,4,5,6,7,8,9,10,11,12]
+my_list = location_data_handler.load_pickled_file("../../plots/user_6_sorted/star_day_0_step_1_days_30_combined_transitions.p")
+#my_list = [0,1,1,0,1,2,0,1,0,2,0,2]
 tu_entr = temporal_uncorrelated_entropy("user_6_sorted", my_list, 30, "app_bins")
 print(tu_entr)
-actual_entropy_with_combined_bins("user_6_sorted", my_list, 30, 24, 2)
+actual_entropy_with_combined_bins("user_6_sorted", my_list, 30, 24, 24)
