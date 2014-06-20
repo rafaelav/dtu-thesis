@@ -17,6 +17,8 @@ def get_number_of_possible_intervals(sequence_len, number_of_elements):
     return number_of_elements - sequence_len + 1
 
 def get_number_of_intervals_which_end_in_location(sequence, sequence_len, loc_over_time_list):
+    """Gets the number of intervals that finish in the location that appeares on the last position
+    in sequence"""
     interv_count = 0
     
     start_pos = sequence_len-1
@@ -195,7 +197,7 @@ def conditional_entropy(user_filename, loc_over_time_list, max_previous=None):
             
     print("Result minimum entropy, number of states for which it is found: ", minimum_entropy, prev_states)
     print("Full sum of all conditional entropies: ", result)
-    return minimum_entropy, prev_states, result
+    return entropies, minimum_entropy, prev_states, result
 
 def actual_entropy_with_combined_bins(user_filename, loc_over_time_list, max_previous=None):
     """
@@ -415,6 +417,7 @@ def get_max_predictability(S, N):
         
     print(result, closest_val)
     #print(sympy.solve(pow(N-1,1-x)/(pow(2,S)*x*pow(1-x,1-x)) - 1))
+    return result, closest_val
 
 # my_list = location_data_handler.load_pickled_file("../../plots/user_6_sorted/star_day_0_step_1_days_30_combined_transitions.p")
 # print(my_list)
@@ -430,21 +433,24 @@ def get_max_predictability(S, N):
 #my_list = location_data_handler.load_pickled_file("../../plots/user_19_sorted/star_day_0_step_1_days_30_combined_transitions.p")
 #actual_entropy_with_bins("test", my_list, 30)
 
-my_list = location_data_handler.load_pickled_file("../../plots/user_6_sorted/star_day_0_step_1_days_30_combined_transitions.p")
+#my_list = location_data_handler.load_pickled_file("../../plots/user_6_sorted/star_day_0_step_1_days_30_combined_transitions.p")
 #my_list = [0,1,1,0,1,2,0,1,0,2,0,2]
 #actual_entropy_with_combined_bins("user_6_sorted", my_list, 30, 24, 24)
 
-bins_per_day = 24
-if bins_per_day != 24 * 12:
-    loc_over_time_list = convert_to_combined_bins(my_list, bins_per_day)
-else:
-    loc_over_time_list = my_list
-max_previous = 10 
- 
-minimum_entropy, prev_states, result = conditional_entropy("user_6_sorted", loc_over_time_list, max_previous)
-result = actual_entropy_with_combined_bins("user_6_sorted", loc_over_time_list,0)    
-tu_entr = temporal_uncorrelated_entropy("user_6_sorted", loc_over_time_list, 30, "app_bins")
-print(tu_entr)
+#######################
+# my_list = location_data_handler.load_pickled_file("../../plots/user_6_sorted/star_day_0_step_1_days_30_combined_transitions.p")
+# bins_per_day = 24
+# if bins_per_day != 24 * 12:
+#     loc_over_time_list = convert_to_combined_bins(my_list, bins_per_day)
+# else:
+#     loc_over_time_list = my_list
+# max_previous = 10 
+#  
+# entro, minimum_entropy, prev_states, result = conditional_entropy("user_6_sorted", loc_over_time_list, max_previous)
+# result = actual_entropy_with_combined_bins("user_6_sorted", loc_over_time_list,0)    
+# tu_entr = temporal_uncorrelated_entropy("user_6_sorted", loc_over_time_list, 30, "app_bins")
+# print(tu_entr)
+######################
 
 # my_list = [0,1,1,0,1,2,0,1,0,2,0,2,5]
 # sequence = [0,1,5]
