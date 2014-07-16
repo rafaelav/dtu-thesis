@@ -144,9 +144,9 @@ def plot_bssid_rssi_avg_over_time(full_data, bssid_sig_dict, colors_dict, userna
         
         plt.xticks(ticks, labels_utc, rotation = 90)
         
-        plt.title("Average signal per time bin for bssid "+str(bssid)+" Plot over (days): "+str(days_to_consider)+" User: "+username)
-        plt.xlabel("Time bins", fontsize=10)
-        plt.ylabel("Average value", fontsize=10)        
+        #plt.title("Average signal per time bin for bssid "+str(bssid)+" Plot over (days): "+str(days_to_consider)+" User: "+username)
+        plt.xlabel("Time bins", fontsize=14)
+        plt.ylabel("Average value", fontsize=14)        
         fig.savefig("../../plots/"+username+"/"+username+"_"+str(days_to_consider)+"days_plot"+"_"+str(bssid)+"_avg_sig.png")
         fig_list.append((fig,bssid))
     return fig_list

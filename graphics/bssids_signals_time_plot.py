@@ -87,9 +87,9 @@ def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_cons
     plt.xticks(ticks, labels_utc, rotation = 90)
     
     # Text over plot (title, axes)
-    plt.title("Access Points - Start (day): "+str(start_day)+" Plot over (days): "+str(days_to_consider)+" User: "+username)
-    plt.xlabel("Moments over time", fontsize=10)
-    plt.ylabel("Signal strength", fontsize=10)
+    #plt.title("Access Points - Start (day): "+str(start_day)+" Plot over (days): "+str(days_to_consider)+" User: "+username)
+    plt.xlabel("APs presence over time", fontsize=14)
+    plt.ylabel("Signal strength", fontsize=14)
 
     # legend
     handles, labels = ax.get_legend_handles_labels()

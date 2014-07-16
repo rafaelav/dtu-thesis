@@ -95,9 +95,9 @@ def plot_bssid_samples_over_time(full_data, bssid_samples_dict, colors_dict, use
         plt.bar(dates_epoch, values, width, color=colors_dict[bssid])
         plt.xticks(ticks, labels_utc, rotation = 90)
         
-        plt.title("Number of samples per time bin for bssid "+str(bssid)+" Plot over (days): "+str(days_to_consider)+" User: "+username)
-        plt.xlabel("Time bins", fontsize=10)
-        plt.ylabel("Sample count", fontsize=10)        
+        #plt.title("Number of samples per time bin for bssid "+str(bssid)+" Plot over (days): "+str(days_to_consider)+" User: "+username)
+        plt.xlabel("Time bins", fontsize=14)
+        plt.ylabel("Sample count", fontsize=14)        
         fig.savefig("../../plots/"+username+"/"+username+"_"+str(days_to_consider)+"days_plot"+"_"+str(bssid)+"_histo.png")
         fig_list.append((fig,bssid))
     return fig_list
