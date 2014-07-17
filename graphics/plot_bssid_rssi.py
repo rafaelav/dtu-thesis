@@ -52,9 +52,9 @@ def launch_plot(user_file, start_day, days_to_consider, n_best_signal_bssids, m_
     print("Data for user "+user_file+" retrieved. Moving on to preparing the data for plotting...")
     fig_sig_strength = bssids_signals_time_plot.prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_dict_with_time_and_rssi, color_codes, most_common_bssids_legend, plot_time_interval, data_start_time, data_end_time)
     fig_sig_strength.clear
-user_list = [3]
+user_list = [6]
 start_day = 0
-days_to_consider = 7
+days_to_consider = 1
 n_best_signal_bssids = -1 
 m_most_popular_bssids = -1
 max_in_legend = 10

@@ -103,14 +103,16 @@ def plot_bssid_rssi_avg_over_time(full_data, running_avg_dict, colors_dict, user
         ticks, labels_utc = get_xticks_xlabels_from_time(start_time, end_time, no_of_ticks, time_bins_len)#(dates_epoch, no_of_ticks)
         
         dates_epoch_non_null, averages_non_null = get_only_non_null_data(dates_epoch, averages)
-        dates_list, averages_list = get_segments_with_no_pause(dates_epoch_non_null, averages_non_null) 
+        #dates_list, averages_list = get_segments_with_no_pause(dates_epoch,averages)#dates_epoch_non_null, averages_non_null) 
         
-        if len(dates_list) != len(averages_list):
-            print("ERROR! Not same len for dates and averages lists")
-            return None
+        #if len(dates_list) != len(averages_list):
+        #    print("ERROR! Not same len for dates and averages lists")
+        #    return None
         
-        for i in range(0,len(dates_list)):
-            plt.plot(dates_list[i], averages_list[i], 'D-', color=colors_dict[bssid])
+        #for i in range(0,len(dates_list)):
+        #    if averages_list[i]!=0 :
+        #        plt.plot(dates_list[i], averages_list[i], 'D-', color=colors_dict[bssid])
+        plt.plot(dates_epoch_non_null, averages_non_null, 'D', color=colors_dict[bssid])
         
         plt.xticks(ticks, labels_utc, rotation = 90)
                     
@@ -121,6 +123,6 @@ def plot_bssid_rssi_avg_over_time(full_data, running_avg_dict, colors_dict, user
         #plt.title("Running average signal per time window ("+str(time_window)+" mins) for bssid "+str(bssid)+" Plot over (days): "+str(days_to_consider)+" User: "+username)
         plt.xlabel("Time bins", fontsize=10)
         plt.ylabel("Running average value (for "+str(time_window)+" mins time window)", fontsize=10)        
-        fig.savefig("../../plots/"+username+"/"+username+"_"+str(days_to_consider)+"days_plot"+"_"+str(bssid)+"_rn_avg_sig.png")
+        fig.savefig("../../plots/"+username+"/"+username+"_"+str(days_to_consider)+"days_plot"+"_"+str(bssid)+"_rn_avg_sig_"+str(time_window)+".png")
         fig_list.append((fig,bssid))
     return fig_list

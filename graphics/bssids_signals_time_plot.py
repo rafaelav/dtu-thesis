@@ -84,6 +84,7 @@ def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_cons
     print(no_of_ticks)
     ticks, labels_utc = get_xticks_xlabels(start_time,end_time, no_of_ticks, time_bins_len)
         
+    ax.set_xlim(start_time-1,end_time+1)
     plt.xticks(ticks, labels_utc, rotation = 90)
     
     # Text over plot (title, axes)
