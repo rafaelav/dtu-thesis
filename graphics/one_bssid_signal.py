@@ -58,29 +58,30 @@ def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_cons
     
     ax = fig.add_subplot(111)
         
-    #bssid = 1
+    bssid = 1
     """ data editing and plotting for each bssid over the given time"""
     for key in data_to_plot.iterkeys():
         first = True
-        for list_elements in data_to_plot[key]:
-            x_time_list = list_elements[0]
-            y_rssi_list = list_elements[1]
-            
-            if len(x_time_list)!=len(y_rssi_list):
-                print("ERROR!")
-                return -1
-            
-            # the first time is the only time when we put a label
-            if first == False:
-                ax.plot(x_time_list, y_rssi_list, '-', color=color_to_use[key])
-            elif first == True and key in most_common_bssids_legend:
-                ax.plot(x_time_list, y_rssi_list, '-', color=color_to_use[key], label=key)
-                first = False
-            elif first == True and key not in most_common_bssids_legend:
-                ax.plot(x_time_list, y_rssi_list, '-', color=color_to_use[key])
-                first = False
-        #bssid = key
-        #break
+        if len(data_to_plot[key]) > 20:
+            for list_elements in data_to_plot[key]:
+                x_time_list = list_elements[0]
+                y_rssi_list = list_elements[1]
+                
+                if len(x_time_list)!=len(y_rssi_list):
+                    print("ERROR!")
+                    return -1
+                
+                # the first time is the only time when we put a label
+                if first == False:
+                    ax.plot(x_time_list, y_rssi_list, '-', color=color_to_use[key])
+                elif first == True and key in most_common_bssids_legend:
+                    ax.plot(x_time_list, y_rssi_list, '-', color=color_to_use[key], label=key)
+                    first = False
+                elif first == True and key not in most_common_bssids_legend:
+                    ax.plot(x_time_list, y_rssi_list, '-', color=color_to_use[key])
+                    first = False
+            bssid = key
+            break
 
     # change labels    
     no_of_ticks = (end_time - start_time)/(time_bins_len*60) + 1
@@ -102,8 +103,8 @@ def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_cons
     lgd = ax.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5,-0.2), ncol=5)
     # end legend
     
-    fig.savefig("../../plots/"+username+"/"+username+"_"+str(days_to_consider)+"days_plot.png", bbox_extra_artists=(lgd,), bbox_inches='tight')
-    #fig.savefig("../../plots/"+username+"/"+username+"_"+str(bssid)+"_plot.png", bbox_extra_artists=(lgd,), bbox_inches='tight')
+    #fig.savefig("../../plots/"+username+"/"+username+"_"+str(days_to_consider)+"days_plot.png", bbox_extra_artists=(lgd,), bbox_inches='tight')
+    fig.savefig("../../plots/"+username+"/"+username+"_"+str(bssid)+"_plot.png", bbox_extra_artists=(lgd,), bbox_inches='tight')
     print("Finished for "+username)
     return fig
     #plt.show()

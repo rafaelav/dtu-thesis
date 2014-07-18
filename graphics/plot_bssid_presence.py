@@ -152,7 +152,7 @@ def plot_data(start_time, end_time, plot_time_interval, presence_on_rows, column
     
     fig = plt.figure()
     fig.clear()
-    fig.set_size_inches(25,10)      
+    fig.set_size_inches(30,10)      
     plt.xlim(start_time,end_time)  
     for bssid in bssids_list[:-1]:
         #print("Something",presence_on_rows[bssid])
@@ -164,9 +164,9 @@ def plot_data(start_time, end_time, plot_time_interval, presence_on_rows, column
                 plt.plot([column_elements[i],column_elements[i]+time_bin*SECS_IN_MINUTE - 1], [values_for_bssids[bssid],values_for_bssids[bssid]], '-',linewidth=line_width_in_plot, color="white")
 
     plt.ylim(0,len(bssids_list)+1)
-    plt.title("Access points without signal strength ("+str(time_bin)+" mins) for bssid "+str(bssid)+" Plot over (days): "+str(days_to_consider)+" User: "+username)
-    plt.xlabel("Time bins", fontsize=10)
-    plt.ylabel("Names of access points", fontsize=10)    
+    #plt.title("Access points without signal strength ("+str(time_bin)+" mins) for bssid "+str(bssid)+" Plot over (days): "+str(days_to_consider)+" User: "+username)
+    plt.xlabel("Time bins", fontsize=18)
+    plt.ylabel("Names of access points", fontsize=18)    
     
     no_of_ticks = (end_time - start_time)/(plot_time_interval*SECS_IN_MINUTE) + 1
     #print(plot_time_interval,no_of_ticks)

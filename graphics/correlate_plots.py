@@ -12,6 +12,7 @@ from graphics import bssids_signals_time_plot
 from graphics import bssids_samples_time_plot
 from graphics import bssids_rssi_avg_time_plot
 from graphics import bssids_rssi_running_avg_time_plot
+from graphics import one_bssid_signal
 
 from matplotlib.backends.backend_pdf import PdfPages
 
@@ -59,6 +60,7 @@ def launch_plots(user_file,start_day,days_to_consider, time_bin, time_window, n_
     # plot
     print("Data for user "+user_file+" retrieved. Moving on to preparing the data for plotting...")
     fig_sig_strength = bssids_signals_time_plot.prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, color_codes, most_common_bssids_legend,plot_time_interval,data_start_time,data_end_time)#, time_list)
+    one_bssid_signal.prepared_data_to_plot_for_each_bssid(user_file, start_day, days_to_consider, bssid_occurences, color_codes, most_common_bssids_legend,plot_time_interval,data_start_time,data_end_time)#, time_list)
 
 
     """ Plotting bssid samples as histograms"""
@@ -106,13 +108,13 @@ def launch_plots(user_file,start_day,days_to_consider, time_bin, time_window, n_
 
     return fig_sig_strength, fig_list_samples, fig_list_avg, fig_list_run_avg, fig_list_run_avg_5,fig_list_run_avg_10
     
-for i in range(6,7):
+for i in range(1,2):
     username = "user_"+str(i)+"_sorted"
     directory = "../../plots/"+username+"/"
     if not os.path.exists(directory):
         os.makedirs(directory)
     days_count = 1
-    fig_sig_strength, fig_list_samples, fig_list_avg, fig_list_run_avg, fig_list_run_avg_5,fig_list_run_avg_10 = launch_plots(username, 1, days_count, 5, 2, -1, -1, 30, days_count*60, 1)
+    fig_sig_strength, fig_list_samples, fig_list_avg, fig_list_run_avg, fig_list_run_avg_5,fig_list_run_avg_10 = launch_plots(username, 0, days_count, 5, 2, -1, -1, 20, days_count*60, 1)
     if len(fig_list_avg) != len(fig_list_samples):
         print("ERROR: Not the same number of figures with samples and with averages")
         break
