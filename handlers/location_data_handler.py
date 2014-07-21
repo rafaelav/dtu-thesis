@@ -52,7 +52,7 @@ def plot_locations(list_locations_over_time_bins, days_to_consider, time_bin, us
     
     fig = plt.figure()
     fig.clear()
-    fig.set_size_inches(25,5)       
+    fig.set_size_inches(15,5)       
      
     plt.xlim(start_time,end_time)
     crt = start_time
@@ -74,7 +74,7 @@ def plot_locations(list_locations_over_time_bins, days_to_consider, time_bin, us
     
     plt.xticks(ticks, labels_utc, rotation = 90)
     plt.yticks([2], [""])
-    
+    fig.tight_layout()    
     fig.savefig(file_path)
 #     if loc_type == "hmm":
 #         fig.savefig("../../plots/"+username+"/"+"hmm_locations_("+str(locations_count)+")_"+str(days_to_consider)+"days_plot.png")
@@ -251,6 +251,11 @@ def estimate_locations_k_fold_cross_validation(K, matrix, min_loc, max_loc, loc_
             max_score = avg_score
             estimated_locations = loc
             transitions = expected
+        if avg_score == max_score and estimated_locations < loc:
+            max_score = avg_score
+            estimated_locations = loc
+            transitions = expected
+            
     print("Accuracy (score, number of estimated locations): ")
     print(max_score, estimated_locations)
     return estimated_locations, transitions    

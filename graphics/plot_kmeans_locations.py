@@ -39,13 +39,13 @@ def start_plot_hmm_locations (user_list, start_day, days_to_consider, m_most_pop
 # m_most_popular_bssids = -1
 # time_bin = 5
 # plot_interval = 60
-
+DAY_INTERVAL_SECS = 24 * 60 * 60
 def determine_estimated_locations_and_plot(user_file,start_day,days_to_consider,m_most_popular_bssids,time_bin,plot_interval):
     pickled_matrix_file = base+user_file+"/"+"pickled_matrix_all_"+user_file+"_"+str(days_to_consider)+"days.p"
     
     user_data = user_data_handler.retrieve_data_from_user(user_file,start_day,days_to_consider)    
     start_time = user_data[0][1]
-    end_time = user_data[len(user_data)-1][1]
+    end_time = end_time = start_time + days_to_consider * DAY_INTERVAL_SECS
     
     # only re-calculate presence matrxi and pickle it if it doens't already exist
     if not os.path.isfile(pickled_matrix_file):
