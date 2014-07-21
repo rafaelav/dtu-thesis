@@ -124,7 +124,7 @@ def plot_data(start_time, end_time, plot_time_interval, presence_on_rows, column
     
     fig = plt.figure()
     fig.clear()
-    fig.set_size_inches(25,10)      
+    fig.set_size_inches(20,10)      
     plt.xlim(start_time,end_time)  
     for bssid in bssids_list[:-1]:
         #print("Something",presence_on_rows[bssid])
@@ -144,6 +144,8 @@ def plot_data(start_time, end_time, plot_time_interval, presence_on_rows, column
     #print(plot_time_interval,no_of_ticks)
     ticks, labels_utc = get_xticks_xlabels_from_time(start_time, end_time, no_of_ticks, plot_time_interval)#(dates_epoch, no_of_ticks)
         
+    plt.tick_params(axis='both', which='major', labelsize=12)
+    plt.tick_params(axis='both', which='minor', labelsize=10)
     plt.xticks(ticks, labels_utc, rotation = 90)
     plt.yticks(values_list, bssids_list)
     

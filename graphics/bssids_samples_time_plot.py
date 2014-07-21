@@ -79,10 +79,12 @@ def plot_bssid_samples_over_time(full_data, bssid_samples_dict, colors_dict, use
             dates_epoch.append(elem[0])
             dates.append(week[start_time_val.weekday()]+" "+str(start_time_val.hour)+":"+str(start_time_val.minute))
         
-        fig = plt.figure()
+        fig = plt.figure(1)
         fig.clear()
         fig.set_size_inches(15,5)    
-        
+    
+        ax = fig.add_subplot(111)    
+        ax.set_xlim(start_time-1,end_time+1)
         #print(bssid)
         #print(values)
         
@@ -91,13 +93,13 @@ def plot_bssid_samples_over_time(full_data, bssid_samples_dict, colors_dict, use
         no_of_ticks = (end_time - start_time)/(time_bins_len*NO_SECS_PER_MIN) + 1
         #print(no_of_ticks)
         ticks, labels_utc = get_xticks_xlabels_from_time(start_time, end_time, no_of_ticks, time_bins_len)#(dates_epoch, no_of_ticks)
-        
-        plt.bar(dates_epoch, values, width, color=colors_dict[bssid])
+        ax.bar(dates_epoch, values, width, color=colors_dict[bssid])
         plt.xticks(ticks, labels_utc, rotation = 90)
         
         #plt.title("Number of samples per time bin for bssid "+str(bssid)+" Plot over (days): "+str(days_to_consider)+" User: "+username)
-        plt.xlabel("Time bins", fontsize=14)
-        plt.ylabel("Sample count", fontsize=14)        
+        plt.xlabel("Time bins", fontsize=16)
+        plt.ylabel("Sample count", fontsize=16)
+        fig.tight_layout()        
         fig.savefig("../../plots/"+username+"/"+username+"_"+str(days_to_consider)+"days_plot"+"_"+str(bssid)+"_histo.png")
         fig_list.append((fig,bssid))
     return fig_list

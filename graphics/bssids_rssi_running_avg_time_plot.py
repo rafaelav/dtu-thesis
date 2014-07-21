@@ -121,8 +121,9 @@ def plot_bssid_rssi_avg_over_time(full_data, running_avg_dict, colors_dict, user
         plt.xticks(ticks, labels_utc, rotation = 90)"""
         
         #plt.title("Running average signal per time window ("+str(time_window)+" mins) for bssid "+str(bssid)+" Plot over (days): "+str(days_to_consider)+" User: "+username)
-        plt.xlabel("Time bins", fontsize=10)
-        plt.ylabel("Running average value (for "+str(time_window)+" mins time window)", fontsize=10)        
+        plt.xlabel("Time bins", fontsize=16)
+        plt.ylabel("Running average ("+str(time_window)+" mins time window)", fontsize=16)
+        fig.tight_layout()        
         fig.savefig("../../plots/"+username+"/"+username+"_"+str(days_to_consider)+"days_plot"+"_"+str(bssid)+"_rn_avg_sig_"+str(time_window)+".png")
         fig_list.append((fig,bssid))
     return fig_list

@@ -10,6 +10,7 @@ from graphics import locations_with_networks
 from graphics import bssids_without_rssi_strength_plot
 from handlers import user_data_handler, location_data_handler
 from handlers import location_data_handler
+from graphics import plot_bssid_presence
 import pickle
 from matplotlib.backends.backend_pdf import PdfPages
 from sklearn import hmm
@@ -19,6 +20,7 @@ import matplotlib.pyplot as plt
 import datetime
 week   = {0:'Mon', 1:'Tue', 2:'Wed', 3:'Thu',  4:'Fri', 5:'Sat', 6:'Sun'}
 
+DAY_INTERVAL_SECS = 24 * 60 * 60
 SECS_IN_MINUTE = 60
 
 def get_utc_from_epoch(epoch_time):
@@ -161,15 +163,22 @@ start_day = 0
 most_common = -1
 time_bin = 5
 plot_interval = 60
-days_to_consider = 2
+days_to_consider = 1
 user_list = [6]
 print(user_list)
 ########################################
+for user in user_list:
+    user_file ="user_"+str(user)+"_sorted"
+    user_data, bssid_times_and_rssis_dict, color_dict = plot_bssid_presence.prepare_data_for_bssid_without_rssi_strength(user_file, start_day, days_to_consider, -1)
+    start_time = user_data[0][1]
+    end_time = start_time+ days_to_consider * DAY_INTERVAL_SECS#user_data[len(user_data)-1][1]    
+    matrix_presence_on_rows, column_elements = plot_bssid_presence.get_bssid_presence_matrix(user_file, start_time, end_time, bssid_times_and_rssis_dict, time_bin)
+    plot_bssid_presence.pickle_result(matrix_presence_on_rows, -1, user_file, days_to_consider)
 #presence_figures = generate_files_with_presence_matrixes(user_list, start_day, days_to_consider, most_common, time_bin, days_to_consider*plot_interval)
-#connected_components_count = generate_locations_based_on_networks(user_list, days_to_consider)
-connected_components_count =dict()
+    connected_components_count = generate_locations_based_on_networks(user_list, days_to_consider)
+#connected_components_count =dict()
 #connected_components_count[1]=19
-connected_components_count[6]=19
+#connected_components_count[6]=19
 #location_transitions = generate_locations_based_on_hmm(user_list, connected_components_count, days_to_consider)
 
 # get locations from results of networks
@@ -177,7 +186,7 @@ connected_components_count[6]=19
 #connected_components_count =dict()
 #connected_components_count[1] = 32
 #connected_components_count[6] = 35
-figures_locations = dict()
+"""figures_locations = dict()
 for user in user_list:
     username = "user_"+str(user)+"_sorted"
     #filename = base+username+"/"+"transitions_"+username+"_"+str(19)+"loc_"+str(days_to_consider)+"days.p"
@@ -196,10 +205,10 @@ for user in user_list:
     
     user_data = user_data_handler.retrieve_data_from_user(username,start_day,days_to_consider)
     start_time = user_data[0][1]
-    end_time = user_data[len(user_data)-1][1]    
+    end_time = start_time+ days_to_consider * DAY_INTERVAL_SECS#user_data[len(user_data)-1][1]    
     print("Plot HMM locations")
     figures_locations[user] = plot_locations_from_hmm(pickled_transitions,connected_components_count[user], days_to_consider,time_bin, username,colors_dict,start_time, end_time, days_to_consider*plot_interval)
-
+"""
 """for user in user_list:
     username = "user_"+str(user)+"_sorted"
     pp = PdfPages(base+username+"/"+"bssids_and_locations_("+str(connected_components_count[user])+")"+username+"_for_"+str(days_to_consider)+".pdf")

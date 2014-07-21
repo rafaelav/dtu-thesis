@@ -94,8 +94,8 @@ def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_cons
     
     # Text over plot (title, axes)
     #plt.title("Access Points - Start (day): "+str(start_day)+" Plot over (days): "+str(days_to_consider)+" User: "+username)
-    plt.xlabel("APs presence over time", fontsize=14)
-    plt.ylabel("Signal strength", fontsize=14)
+    plt.xlabel("APs presence over time", fontsize=16)
+    plt.ylabel("Signal strength", fontsize=16)
 
     # legend
     handles, labels = ax.get_legend_handles_labels()
@@ -104,6 +104,7 @@ def plot_for_bssid(color_to_use, data_to_plot, username, start_day, days_to_cons
     # end legend
     
     #fig.savefig("../../plots/"+username+"/"+username+"_"+str(days_to_consider)+"days_plot.png", bbox_extra_artists=(lgd,), bbox_inches='tight')
+    fig.tight_layout()
     fig.savefig("../../plots/"+username+"/"+username+"_"+str(bssid)+"_plot.png", bbox_extra_artists=(lgd,), bbox_inches='tight')
     print("Finished for "+username)
     return fig

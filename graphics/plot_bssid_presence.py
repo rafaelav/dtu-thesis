@@ -152,7 +152,7 @@ def plot_data(start_time, end_time, plot_time_interval, presence_on_rows, column
     
     fig = plt.figure()
     fig.clear()
-    fig.set_size_inches(30,10)      
+    fig.set_size_inches(15,10)      
     plt.xlim(start_time,end_time)  
     for bssid in bssids_list[:-1]:
         #print("Something",presence_on_rows[bssid])
@@ -165,16 +165,17 @@ def plot_data(start_time, end_time, plot_time_interval, presence_on_rows, column
 
     plt.ylim(0,len(bssids_list)+1)
     #plt.title("Access points without signal strength ("+str(time_bin)+" mins) for bssid "+str(bssid)+" Plot over (days): "+str(days_to_consider)+" User: "+username)
-    plt.xlabel("Time bins", fontsize=18)
-    plt.ylabel("Names of access points", fontsize=18)    
+    plt.xlabel("Time bins", fontsize=20)
+    plt.ylabel("Names of access points", fontsize=20)    
     
     no_of_ticks = (end_time - start_time)/(plot_time_interval*SECS_IN_MINUTE) + 1
     #print(plot_time_interval,no_of_ticks)
     ticks, labels_utc = get_xticks_xlabels_from_time(start_time, end_time, no_of_ticks, plot_time_interval)#(dates_epoch, no_of_ticks)
-        
+    plt.tick_params(axis='both', which='major', labelsize=14)
+    plt.tick_params(axis='both', which='minor', labelsize=11)
     plt.xticks(ticks, labels_utc, rotation = 90)
     plt.yticks(values_list, bssids_list)
-    
+    fig.tight_layout()
     fig.savefig("../../plots/"+username+"/"+username+"_"+str(days_to_consider)+"days_no_rssi_plot.png")
 
 def reduce_matrix_to_needed_bssids(matrix_presence_on_rows, bssid_times_and_rssis_dict, limit):

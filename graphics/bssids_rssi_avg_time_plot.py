@@ -116,9 +116,13 @@ def plot_bssid_rssi_avg_over_time(full_data, bssid_sig_dict, colors_dict, userna
             dates_epoch.append(elem[0])
             dates.append(week[start_time_val.weekday()]+" "+str(start_time_val.hour)+":"+str(start_time_val.minute))
         
-        fig = plt.figure()
+        fig = plt.figure(1)
         fig.clear()
         fig.set_size_inches(15,5)    
+    
+        ax = fig.add_subplot(111)    
+        ax.set_xlim(start_time-1,end_time+1)
+  
         
         #print(bssid)
         #print(averages)
@@ -145,8 +149,9 @@ def plot_bssid_rssi_avg_over_time(full_data, bssid_sig_dict, colors_dict, userna
         plt.xticks(ticks, labels_utc, rotation = 90)
         
         #plt.title("Average signal per time bin for bssid "+str(bssid)+" Plot over (days): "+str(days_to_consider)+" User: "+username)
-        plt.xlabel("Time bins", fontsize=14)
-        plt.ylabel("Average value", fontsize=14)        
+        plt.xlabel("Time bins", fontsize=16)
+        plt.ylabel("Average value", fontsize=16)
+        fig.tight_layout()        
         fig.savefig("../../plots/"+username+"/"+username+"_"+str(days_to_consider)+"days_plot"+"_"+str(bssid)+"_avg_sig.png")
         fig_list.append((fig,bssid))
     return fig_list
