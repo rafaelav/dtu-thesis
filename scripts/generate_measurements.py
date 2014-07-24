@@ -9,7 +9,7 @@ from handlers import location_data_handler
 from handlers import measurements_handler
 
 user_list = [6]
-max_previous_conditional_entropy = 10
+max_previous_conditional_entropy = 3
 max_previous_full_entropy = -1
 bins_per_day = 24#*12
 base = "../../plots/"
@@ -33,20 +33,22 @@ for user in user_list:
     tu_entropy = measurements_handler.temporal_uncorrelated_entropy(username, loc_over_time_list, no_of_days, tu_entro_type)
     
     # calculating full entropy 
-    if max_previous_full_entropy != -1:
-        full_entropy = measurements_handler.actual_entropy_with_combined_bins(username, loc_over_time_list, max_previous_full_entropy)
-    else:
-        full_entropy = measurements_handler.actual_entropy_with_combined_bins(username, loc_over_time_list)
+#    if max_previous_full_entropy != -1:
+#        full_entropy = measurements_handler.actual_entropy_with_combined_bins(username, loc_over_time_list, max_previous_full_entropy)
+#    else:
+#        full_entropy = measurements_handler.actual_entropy_with_combined_bins(username, loc_over_time_list)
         
     # calculating conditional entropy
     if max_previous_conditional_entropy!=-1:
-        entropies, minimum_cond_entropy, no_of_known_states, sum_of_all_possibilities = measurements_handler.conditional_entropy(username, loc_over_time_list, max_previous_conditional_entropy)
+        entropies, minimum_cond_entropy, no_of_known_states, sum_of_all_possibilities, media = measurements_handler.conditional_entropy(username, loc_over_time_list, max_previous_conditional_entropy)
     else:
-        entropies, minimum_cond_entropy, no_of_known_states, sum_of_all_possibilities = measurements_handler.conditional_entropy(username, loc_over_time_list)        
+        entropies, minimum_cond_entropy, no_of_known_states, sum_of_all_possibilities, media = measurements_handler.conditional_entropy(username, loc_over_time_list)        
     
     # calculating predictability - again..only with all locations in 30 days
     no_locations = location_data_handler.get_locations_found(loc_over_time_list)
-    predictability, how_close_to_0 = measurements_handler.get_max_predictability(entropies[1], no_locations)
+    #predictability, how_close_to_0 = measurements_handler.get_max_predictability(entropies[1], no_locations)
+    predictability, how_close_to_0 = measurements_handler.get_max_predictability(media, no_locations)
     
-    print("Random, temporal-uncorrelated, full, minimum conditional",rand_entropy, tu_entropy, full_entropy, minimum_cond_entropy)
+    #print("Random, temporal-uncorrelated, full, minimum conditional, sum of all possibilities",rand_entropy, tu_entropy, full_entropy, minimum_cond_entropy, sum_of_all_possibilities)
+    print("Random, temporal-uncorrelated, full, minimum conditional, sum of all possibilities",rand_entropy, tu_entropy, media)
     print("Max predictability: ",predictability)

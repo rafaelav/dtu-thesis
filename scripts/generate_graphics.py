@@ -14,7 +14,7 @@ from graphics import plot_bssid_rssi
 #user_list = [1,2,3,6,9,15,17,18,40]
 user_list = [6]
 start_day = 0#6
-days_to_consider = 2
+days_to_consider = 3
 n_best_signal_bssids = -1 
 m_most_popular_bssids = -1
 max_in_legend = 10
@@ -34,4 +34,4 @@ plot_hmm_locations.start_plot_hmm_locations(user_list, start_day, days_to_consid
 # print("Start time: "+str(start_moment))
 # print("End time: "+str(datetime.datetime.now()))
 print("Kmeans locations")
-plot_kmeans_locations.start_plot_hmm_locations (user_list, start_day, days_to_consider, m_most_popular_bssids, time_bin, plot_interval)
+#plot_kmeans_locations.start_plot_hmm_locations (user_list, start_day, days_to_consider, m_most_popular_bssids, time_bin, plot_interval)

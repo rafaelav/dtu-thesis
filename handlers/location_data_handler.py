@@ -65,8 +65,8 @@ def plot_locations(list_locations_over_time_bins, days_to_consider, time_bin, us
         crt = crt+time_bin*SECS_IN_MINUTE
 
     #plt.ylim(0)
-    plt.title("Locations from "+loc_type+" data. Plot over (days): "+str(days_to_consider)+" User: "+username)
-    plt.xlabel("Locations in time", fontsize=10)
+    #plt.title("Locations from "+loc_type+" data. Plot over (days): "+str(days_to_consider)+" User: "+username)
+    #plt.xlabel("Locations in time", fontsize=10)
     
     no_of_ticks = (end_time - start_time)/(plot_time_interval*SECS_IN_MINUTE) + 1
     #print(plot_time_interval,no_of_ticks)

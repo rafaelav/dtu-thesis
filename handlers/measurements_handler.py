@@ -15,6 +15,11 @@ INTERVALS_PER_DAY = 24
 
 def get_number_of_possible_intervals(sequence_len, number_of_elements):
     return number_of_elements - sequence_len + 1
+def get_number_of_all_possible_intervals(number_of_elements):
+    total = 0
+    for i in range(1,number_of_elements):
+        total = total + number_of_elements - i + 1
+    return total
 
 def get_number_of_intervals_which_end_in_location(sequence, sequence_len, loc_over_time_list):
     """Gets the number of intervals that finish in the location that appeares on the last position
@@ -31,6 +36,10 @@ def get_number_of_intervals_which_end_in_location(sequence, sequence_len, loc_ov
 
 def build_sequence(sequence_len, start_pos, loc_over_time_list):
     return loc_over_time_list[start_pos: sequence_len+start_pos]
+
+def build_sequence_string(sequence_len, start_pos, loc_over_time_list):
+    seq_list = str(loc_over_time_list[start_pos: sequence_len+start_pos])[1:-1]
+    return seq_list
 
 def actual_entropy_with_bins(user_filename, loc_over_time_list, no_of_days, max_previous):
     #result = 0
@@ -188,6 +197,15 @@ def conditional_entropy(user_filename, loc_over_time_list, max_previous=None):
         prev_list_count_apparitions_of_sequences = list_count_apparitions_of_sequences 
 
     print(entropies)
+    crt = 0
+    media = 0
+    for key in entropies.keys():
+        if entropies[key] !=0:
+            media = media + entropies[key]
+            crt = crt + 1
+        else:
+            break
+    media = (media+0.0)/crt
     minimum_entropy = entropies[1]
     prev_states = 1
     for key in entropies:
@@ -197,7 +215,79 @@ def conditional_entropy(user_filename, loc_over_time_list, max_previous=None):
             
     print("Result minimum entropy, number of states for which it is found: ", minimum_entropy, prev_states)
     print("Full sum of all conditional entropies: ", result)
-    return entropies, minimum_entropy, prev_states, result
+    return entropies, minimum_entropy, prev_states, result, media
+
+def conditional_entropy_version2(user_filename, loc_over_time_list, max_previous=None):
+    """
+    Calculating the correlated entropy when knowing maximum max_previous steps.
+    The loc_over_time list can be any form of location list (5 min bin, 24 h bins etc.)
+    """
+    print("User: ", user_filename)
+    result = 0 # usefull when max_prev == none and we can also calculate full entropy with this considering a different formula
+    
+    min_sequence_length = 1
+    if max_previous != None:
+        print("We have a max_previous known data limit")
+        max_sequence_length = max_previous#bins_per_day * no_of_days
+    else:
+        print("We don't have a max_previous known data limit")
+        max_sequence_length = len(loc_over_time_list)
+
+    prev_list_found_sequences = dict()
+    
+    entropies=dict()
+    for sequence_len in range(min_sequence_length, max_sequence_length):
+        entropies[sequence_len]=0
+        print("Len of sequences: "+str(sequence_len))
+        list_found_sequences = dict()
+        
+        start_pos = 0
+        
+        while start_pos+sequence_len <= len(loc_over_time_list):
+            sequence = build_sequence_string(sequence_len, start_pos, loc_over_time_list)
+            #print("Start seq: "+str(start_pos)+" Int len: "+str(sequence_len))
+            #print(" Seq: ",sequence)
+            list_found_sequences[sequence] = list_found_sequences.get(sequence,0) + 1 
+            start_pos = start_pos + 1
+                    
+        intervals_count = get_number_of_possible_intervals(sequence_len, len(loc_over_time_list))
+        #intervals_count = get_number_of_intervals_which_end_in_location(sequence, sequence_len, loc_over_time_list)
+
+        for x in list_found_sequences.keys():
+            probability = (list_found_sequences[x]+0.0)/intervals_count
+            #print(x, probability)
+            if sequence_len > 1:
+                prefix = x[:x.rfind(',')]
+                probability_prefix=(prev_list_found_sequences[prefix]+0.0)/intervals_count 
+            else:
+                probability_prefix = 1 
+
+            result = result - probability*log(probability/probability_prefix,2)
+            entropies[sequence_len] = entropies[sequence_len] - probability*log(probability/probability_prefix,2)
+        
+        prev_list_found_sequences = list_found_sequences
+
+    print(entropies)
+    crt = 0
+    media = 0
+    for key in entropies.keys():
+        if entropies[key] !=0:
+            media = media + entropies[key]
+            crt = crt + 1
+        else:
+            break
+    media = (media+0.0)/crt
+    minimum_entropy = entropies[1]
+    prev_states = 1
+    for key in entropies:
+        if minimum_entropy>entropies[key]:
+            minimum_entropy = entropies[key]
+            prev_states = key
+            
+    print("Result minimum entropy, number of states for which it is found: ", minimum_entropy, prev_states)
+    print("Full sum of all conditional entropies: ", result)
+    return entropies, minimum_entropy, prev_states, result, media
+
 
 def actual_entropy_with_combined_bins(user_filename, loc_over_time_list, max_previous=None):
     """
@@ -222,6 +312,7 @@ def actual_entropy_with_combined_bins(user_filename, loc_over_time_list, max_pre
 #    prev_list_count_apparitions_of_sequences = [] 
     
 #    entropies=dict()
+    no_subseq_apps = 0
     for sequence_len in range(min_sequence_length, max_sequence_length):
 #        entropies[sequence_len]=0
         print("Len of sequences: "+str(sequence_len))
@@ -245,7 +336,8 @@ def actual_entropy_with_combined_bins(user_filename, loc_over_time_list, max_pre
 #         for ap in list_count_apparitions_of_sequences:
 #             no_aps = no_aps + ap
             
-        intervals_count = get_number_of_possible_intervals(sequence_len, len(loc_over_time_list))
+        #intervals_count = get_number_of_possible_intervals(sequence_len, len(loc_over_time_list))
+        intervals_count = get_number_of_all_possible_intervals(len(loc_over_time_list))+0.0
         #intervals_count = get_number_of_intervals_which_end_in_location(sequence, sequence_len, loc_over_time_list)
 #         if no_aps != intervals_count:
 #             print("ERROR")
@@ -257,27 +349,28 @@ def actual_entropy_with_combined_bins(user_filename, loc_over_time_list, max_pre
 #        print(list_found_sequences)
 #        print(list_count_apparitions_of_sequences)
         
-        crt = 0
+#        crt = 0
         for x in list_found_sequences:
-            probability = (list_count_apparitions_of_sequences[crt]+0.0)/intervals_count
+            probability = (list_count_apparitions_of_sequences[list_found_sequences.index(x)]+0.0)/intervals_count
             #print(x, probability)
-#             if sequence_len > 1:
-#                 prefix = x[:-1]
-#                 probability_prefix=(prev_list_count_apparitions_of_sequences[prev_list_found_sequences.index(prefix)]+0.0)/intervals_count 
-#             else:
-#                 probability_prefix = 1 
+#            if sequence_len > 1:
+#                prefix = x[:-1]
+#                probability_prefix=(prev_list_count_apparitions_of_sequences[prev_list_found_sequences.index(prefix)]+0.0)/intervals_count 
+#            else:
+#                probability_prefix = 1 
             #print("probability: ",probability)
             #print(probability*log(probability,2),probability,list_count_apparitions_of_sequences[crt],x)
             #print(log(probability,2))
             result = result - probability*log(probability,2)
+#            result = result - probability*log(probability/probability_prefix,2)
 #            entropies[sequence_len] = entropies[sequence_len] - probability*log(probability/probability_prefix,2)
             #print(probability*log(probability,2))
-            crt = crt + 1
+#            crt = crt + 1
         #print("Partial result: "+str(result))
         
 #        prev_list_found_sequences = list_found_sequences
 #        prev_list_count_apparitions_of_sequences = list_count_apparitions_of_sequences 
-
+        no_subseq_apps = no_subseq_apps + sum(list_count_apparitions_of_sequences)
 #     print(entropies)
 #     minimum_entropy = entropies[1]
 #     prev_states = 1
@@ -287,6 +380,7 @@ def actual_entropy_with_combined_bins(user_filename, loc_over_time_list, max_pre
 #             prev_states = key
             
     print("Sum of entropies: ",result)
+    print("Subsequences = ", no_subseq_apps, get_number_of_all_possible_intervals(len(loc_over_time_list)))
     return result
         
 def random_entropy(user_filename, loc_over_time_list):
