@@ -271,7 +271,7 @@ def conditional_entropy_version2(user_filename, loc_over_time_list, max_previous
     crt = 0
     media = 0
     for key in entropies.keys():
-        if entropies[key] !=0:
+        if crt<10:
             media = media + entropies[key]
             crt = crt + 1
         else:
@@ -511,8 +511,55 @@ def get_max_predictability(S, N):
         
     print(result, closest_val)
     #print(sympy.solve(pow(N-1,1-x)/(pow(2,S)*x*pow(1-x,1-x)) - 1))
-    return result, closest_val
+    return result#, closest_val
 
+def get_ab(S,N):
+    a = 0.0010
+    b = 0.9900
+    val_a = (-1)*a*log(a,2)-(1-a)*log((1-a),2)+(1-a)*log((N-1),2)-S
+    val_b = (-1)*b*log(b,2)-(1-b)*log((1-b),2)+(1-b)*log((N-1),2)-S
+    if (val_a < 0 and val_b >0) or (val_a > 0 and val_b <0):
+        return a,b
+    while a < b:
+        a = a + 0.001
+        val_a = (-1)*a*log(a,2)-(1-a)*log((1-a),2)+(1-a)*log((N-1),2)-S
+        if val_a == 0:
+            return a,-1
+        val_b = (-1)*b*log(b,2)-(1-b)*log((1-b),2)+(1-b)*log((N-1),2)-S
+        if (val_a < 0 and val_b >0) or (val_a > 0 and val_b <0):
+            return a,b
+    return -2,-2
+
+def get_max_predictability_version2(S,N):
+    iter = 0
+    MAX_ITER = 500
+    TOL = 0.001
+    
+    x = 0.9900
+    
+    if 0 == abs((-1)*x*log(x,2)-(1-x)*log((1-x),2)+(1-x)*log((N-1),2)-S):
+        return 0.9900
+    
+    a,b = get_ab(S,N)
+    if a==-2:
+        return get_max_predictability(S, N)
+
+    if b == - 1:
+        return a 
+    
+    while iter < MAX_ITER:
+        c = (a + b +0.0000)/2.0000
+        val_c = (-1)*c*log(c,2)-(1-c)*log((1-c),2)+(1-c)*log((N-1),2)-S
+        if val_c == 0 or (b-a+0.0000)/2.0000 < TOL:
+            return c
+        iter = iter + 1
+        val_a = (-1)*a*log(a,2)-(1-a)*log((1-a),2)+(1-a)*log((N-1),2)-S
+        if (val_c < 0 and a < 0) or (val_c >0 and val_a>0):
+            a = c
+        else:
+            b = c
+    
+    return 0.9700
 # my_list = location_data_handler.load_pickled_file("../../plots/user_6_sorted/star_day_0_step_1_days_30_combined_transitions.p")
 # print(my_list)
 # #prob = get_probability_of_individual_apparition_over_days(3, my_list,1)

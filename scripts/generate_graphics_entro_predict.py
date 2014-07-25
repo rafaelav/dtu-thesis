@@ -9,12 +9,12 @@ from handlers import location_data_handler
 from handlers import measurements_handler
 import pickle
 
-user_list = [4]#,6,7,11,12,14,17,19,20,24,25,27,32,34,35,36,37,38,39,40,41,44,45,46,48,49,50,52,53,55,57,58,59,60,62,70]
+user_list = [4,6,7,11,12,14,17,19,20,24,25,27,32,34,35,36,37,38,39,40,41,44,45,46,48,49,50,52,53,55,57,58,59,60,62,70,72,74,75]
 max_previous_conditional_entropy = -1
 max_previous_full_entropy = -1
-bins_per_day = 24*4
+bins_per_day = 24*2
 base = "../../plots/"
-base_entro_pred = "entro_pred/"
+base_entro_pred = "entro_pred_2/"
 file_full_entropies = base+base_entro_pred+"full_entropies.p"
 file_rand_entropies = base+base_entro_pred+"rand_entropies.p"
 file_tu_entropies = base+base_entro_pred+"tu_entropies.p"
@@ -70,8 +70,8 @@ def generate_measurements_and_save_results():
         # calculating predictability - again..only with all locations in 30 days
         no_locations = location_data_handler.get_locations_found(loc_over_time_list)
         #predictability, how_close_to_0 = measurements_handler.get_max_predictability(entropies[1], no_locations)
-        predictability, how_close_to_0 = measurements_handler.get_max_predictability(media, no_locations)
-        
+        #predictability, how_close_to_0 = measurements_handler.get_max_predictability(media, no_locations)
+        predictability = measurements_handler.get_max_predictability_version2(media, no_locations)
         #save predictability for each user
         dict_user_predict[user] = predictability
         
@@ -122,4 +122,4 @@ def generate_pred_distribution():
     stuff = 1
     
 generate_measurements_and_save_results()
-generate_entro_distribution(base+base_entro_pred+"full_entro_distrib.png")
+#generate_entro_distribution(base+base_entro_pred+"full_entro_distrib.png")
