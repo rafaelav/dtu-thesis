@@ -10,9 +10,9 @@ sys.path.append( ".." )
 from handlers import match_handler
 from handlers import user_data_handler
 
-user_list = [6]
+user_list = [4,6,7,11,12,14,17,19,20,24,25,27,32,34,35,36,37,38,39,40,41,44,45,46,48,49,50,52,53,55,57,58,59,60,62,70,72,74,75]
 start_day = 0
-days_to_consider = 30 # in total
+days_to_consider = 15 # in total
 n_best_signal_bssids = -1 
 m_most_popular_bssids = -1
 max_in_legend = 10

@@ -14,7 +14,7 @@ max_previous_conditional_entropy = -1
 max_previous_full_entropy = -1
 bins_per_day = 24*2
 base = "../../plots/"
-base_entro_pred = "entro_pred_2/"
+base_entro_pred = "entro_pred_3/"
 file_full_entropies = base+base_entro_pred+"full_entropies.p"
 file_rand_entropies = base+base_entro_pred+"rand_entropies.p"
 file_tu_entropies = base+base_entro_pred+"tu_entropies.p"
@@ -86,7 +86,9 @@ def generate_measurements_and_save_results():
         pickle.dump(dict_user_predict, open(file_pred, "wb"))
 
 import matplotlib.pyplot as plt
-from numpy.random import normal
+import numpy as np
+from scipy.interpolate import UnivariateSpline
+
 
 def generate_entro_distribution(file_in_which_to_save):
     full_entro_dict = pickle.load(open(file_full_entropies, "rb" ))
@@ -105,21 +107,197 @@ def generate_entro_distribution(file_in_which_to_save):
     fig.clear()
     fig.set_size_inches(15,5)  
     #plt.title("Gaussian Histogram")
-    plt.xlabel("Entropy value")
-    plt.ylabel("Frequency distribution")    
-    plt.hist(numbers, bins=no_bins, normed=True)
+    plt.xlabel("S value", fontsize=18)
+    plt.ylabel("Frequency distribution", fontsize=18)    
+    plt.hist(numbers, bins=no_bins, normed=False)
     fig.tight_layout()     
     fig.savefig(file_in_which_to_save)
     
+def generate_rand_entro_distribution(file_in_which_to_save):
+    full_entro_dict = pickle.load(open(file_rand_entropies, "rb" ))
+    numbers = []
+    for key in full_entro_dict.keys():
+        numbers.append(round(full_entro_dict[key],2))
+    unique_numbers = []
+    for x in numbers:
+        if x not in unique_numbers:
+            unique_numbers.append(x)
+    no_bins = len(unique_numbers)
+    print(no_bins)
+        
+    print(numbers)
+    fig = plt.figure()
+    fig.clear()
+    fig.set_size_inches(15,5)  
+    #plt.title("Gaussian Histogram")
+    plt.xlabel("S_rand value", fontsize=18)
+    plt.ylabel("Frequency distribution", fontsize=18)    
+    plt.hist(numbers, bins=no_bins, color ='green', normed=False)
+    fig.tight_layout()     
+    fig.savefig(file_in_which_to_save)
+
+def generate_tu_entro_distribution(file_in_which_to_save):
+    full_entro_dict = pickle.load(open(file_tu_entropies, "rb" ))
+    numbers = []
+    for key in full_entro_dict.keys():
+        numbers.append(round(full_entro_dict[key],2))
+    unique_numbers = []
+    for x in numbers:
+        if x not in unique_numbers:
+            unique_numbers.append(x)
+    no_bins = len(unique_numbers)
+    print(no_bins)
+        
+    print(numbers)
+    fig = plt.figure()
+    fig.clear()
+    fig.set_size_inches(15,5)  
+    #plt.title("Gaussian Histogram")
+    plt.xlabel("S_unc value", fontsize=18)
+    plt.ylabel("Frequency distribution", fontsize=18)    
+    plt.hist(numbers, bins=no_bins, color ='red', normed=False)
+    fig.tight_layout()     
+    fig.savefig(file_in_which_to_save)
     
-def generate_conditioned_entro_graphic(user_list_cond_graphic):
-    stuff = 1
+def gen_overlay_histo(file_in_which_to_save):
 
+
+    x = pickle.load(open(file_full_entropies, "rb" ))
+    y = pickle.load(open(file_rand_entropies, "rb" ))
+    z = pickle.load(open(file_tu_entropies, "rb" ))
+    numbersx = []
+    numbersy =[]
+    numbersz = []
+
+    for key in x.keys():
+        numbersx.append(round(x[key],2))
+    unique_numbersx = []
+    for x in numbersx:
+        if x not in unique_numbersx:
+            unique_numbersx.append(x)
+    no_binsx = len(unique_numbersx)
+
+    for key in y.keys():
+        numbersy.append(round(y[key],2))
+    unique_numbersy = []
+    for y in numbersy:
+        if y not in unique_numbersy:
+            unique_numbersy.append(y)
+    no_binsy = len(unique_numbersy)
+
+    for key in z.keys():
+        numbersz.append(round(z[key],2))
+    unique_numbersz = []
+    for z in numbersz:
+        if z not in unique_numbersz:
+            unique_numbersz.append(z)
+    no_binsz = len(unique_numbersz)
+        
+    fig = plt.figure()
+    fig.clear()
+    fig.set_size_inches(15,5)  
+    #plt.title("Gaussian Histogram")
+    plt.xlabel("Entropy value", fontsize=18)
+    plt.ylabel("Frequency distribution", fontsize=18)    
+
+    plt.hist(numbersx, no_binsx, alpha=0.3, label='S')
+    plt.hist(numbersy, no_binsy, alpha=0.3, label='S_rand')
+    plt.hist(numbersz, no_binsz, alpha=0.3, label='S_unc')
+    plt.legend(loc='upper right')
+
+    """p, x = np.histogram(numbersx, bins=no_binsx) # bin it into n = N/10 bins
+    x = x[:-1] + (x[1] - x[0])/2   # convert bin edges to centers
+    f = UnivariateSpline(x, p, s=len(numbersx))
+    plt.plot(x, f(x))
+    plt.show()"""    
+    
+    fig.tight_layout()     
+    fig.savefig(file_in_which_to_save)
+
+
+def generate_conditioned_entro_graphic(file_in_which_to_save):
+    all_cond_entro = pickle.load(open(file_cond_entropies, "rb" ))
+    
+    numbers = []
+    order = []
+    crt = 1
+    for key in all_cond_entro.keys():
+        for i in all_cond_entro[key]:
+            if crt<31:
+                numbers.append(all_cond_entro[key][i])
+                order.append(crt)
+                crt= crt + 1
+            else:
+                break
+        break
+    fig = plt.figure()
+    fig.clear()
+    fig.set_size_inches(15,5)  
+    #plt.title("Gaussian Histogram")
+    plt.xlabel("Number of previously known positions", fontsize=18)
+    plt.ylabel("S_cond value ", fontsize=18)    
+
+    plt.plot(order, numbers, 'yo-')
+    
+    fig.tight_layout()     
+    fig.savefig(file_in_which_to_save)
+    
 def generate_averages():
-    stuff = 1
+    x = pickle.load(open(file_full_entropies, "rb" ))
+    y = pickle.load(open(file_rand_entropies, "rb" ))
+    z = pickle.load(open(file_tu_entropies, "rb" ))
+    t = pickle.load(open(file_pred, "rb"))
+    numbersx = []
+    numbersy =[]
+    numbersz = []
+    numberst = []
+    for key in x.keys():
+        numbersx.append(x[key])
 
+    for key in y.keys():
+        numbersy.append(y[key])
+
+    for key in z.keys():
+        numbersz.append(z[key])
+        
+    for key in t.keys():
+        numberst.append(t[key])            
+
+    sumx = 0 
+    for key in x.keys():
+        sumx = sumx + x[key]
+    
+    avg_x = (sumx+0.0000)/len(numbersx)
+    print("Avg entr: ",avg_x)
+    
+    sumy = 0
+    for key in y.keys():
+        sumy = sumy + y[key]
+    
+    avg_y = (sumy+0.0000)/len(numbersy)
+    print("Avg entr: ",avg_y)
+
+    sumz = 0
+    for key in z.keys():
+        sumz = sumz + z[key]
+    
+    avg_z = (sumz+0.0000)/len(numbersz)
+    print("Avg entr: ",avg_z)
+
+    sumt = 0 
+    for key in t.keys():
+        sumt = sumt + t[key]
+    
+    avg_t = (sumt+0.0000)/len(numberst)
+    print("Pred: ",avg_t)
+    
 def generate_pred_distribution():
     stuff = 1
     
 generate_measurements_and_save_results()
-#generate_entro_distribution(base+base_entro_pred+"full_entro_distrib.png")
+generate_entro_distribution(base+base_entro_pred+"full_entro_distrib.png")
+generate_rand_entro_distribution(base+base_entro_pred+"rand_entro_distrib.png")
+generate_tu_entro_distribution(base+base_entro_pred+"tu_entro_distrib.png")
+gen_overlay_histo(base+base_entro_pred+"overlay.png")
+generate_averages()
+generate_conditioned_entro_graphic(base+base_entro_pred+"constr.png")

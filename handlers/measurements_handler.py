@@ -271,11 +271,12 @@ def conditional_entropy_version2(user_filename, loc_over_time_list, max_previous
     crt = 0
     media = 0
     for key in entropies.keys():
-        if crt<10:
+        if crt<50:
+        #if entropies[key]>0:
             media = media + entropies[key]
             crt = crt + 1
-        else:
-            break
+        #else:
+        #    break
     media = (media+0.0)/crt
     minimum_entropy = entropies[1]
     prev_states = 1
