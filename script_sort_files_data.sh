@@ -1,4 +1,4 @@
-dir="../wifi_data"
+dir="../location_data"
 for f in "$dir"/*; do
   b="_sorted"
   sort "$f" -o "$f"$b

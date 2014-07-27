@@ -172,6 +172,27 @@ def generate_color_codes_for_bssid(bssid_list):
     color_dict = dict(bssid_color_list)
     return color_dict
 
+def generate_color_codes_for_gps_loc(stops):
+    """ Returns a dictionary that has as key a bssid and as value an associated auto-generated color for that bssid"""
+
+    added_colors = []
+    stops_color_list = []
+    
+    for stop in range(0,len(stops)):
+        found = False
+        while found == False:
+            r = lambda: random.randint(0, 255)
+            new_color = '#%02X%02X%02X' % (r(), r(), r())
+            # print(new_color)
+            if new_color not in added_colors:
+                added_colors.append(new_color)
+                stops_color_list.append((stop, new_color))
+                found = True
+                # print("found one")
+    
+    color_dict = dict(stops_color_list)
+    return color_dict
+
 def not_noise(data):
     """ Returns true if the given data doesn't represent noise and false otherwise"""
     if len(data) < 6:
