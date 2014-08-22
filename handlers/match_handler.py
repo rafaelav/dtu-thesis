@@ -156,8 +156,8 @@ def extract_fingerprints_for_locations(transitions_file, presence_matrix_file, d
                 fingerprints[x][bssid] = 0
             else:
                 fingerprints[x][bssid] = 1
-        print("LOCATION "+str(x))
-        print(fingerprints[x])
+        #print("LOCATION "+str(x))
+        #print(fingerprints[x])
     return fingerprints
 
 def start_association_dictionary(fingerprints):
@@ -293,16 +293,25 @@ def get_similarity_common_bssids_and_active_bssid(dict_a, dict_b):
     (same in a and b).
     """
     # if all keys in a and b have 0 associated to it then they are the NONE location
-    onlyZeros = True
+    onlyZerosA = True
+    onlyZerosB = True
+    
     for key in dict_a:
         if dict_a[key] == 1:
-            onlyZeros = False
+            onlyZerosA = False
 
     for key in dict_b:
         if dict_b[key] == 1:
-            onlyZeros = False
-    if onlyZeros == True:
+            onlyZerosB = False
+            
+    if onlyZerosA == True and onlyZerosB == True:
         return 1
+    # in one is non location an the other has any signal -> different locations
+    if onlyZerosA == True and onlyZerosB == False:
+        return 0
+    if onlyZerosB == True and onlyZerosA == False:
+        return 0
+    
     
     # else
     dict_a_modified = dict()
@@ -318,8 +327,9 @@ def get_similarity_common_bssids_and_active_bssid(dict_a, dict_b):
                 dict_b_modified[key] = 0
         else:
             if key in dict_b:
-                dict_a_modified[key] = 0
-                dict_b_modified[key] = dict_b[key]
+                if dict_b[key] == 1: # added in order to ignore all elements if they are 0 in both
+                    dict_a_modified[key] = 0
+                    dict_b_modified[key] = dict_b[key]
 
     for key in dict_b:
         if key not in dict_b_modified:
@@ -331,8 +341,9 @@ def get_similarity_common_bssids_and_active_bssid(dict_a, dict_b):
                     dict_a_modified[key] = 0
             else:
                 if key in dict_a:
-                    dict_b_modified[key] = 0
-                    dict_a_modified[key] = dict_a[key]
+                    if dict_a[key] == 1: # added in order to ignore all elements if they are 0 in both
+                        dict_b_modified[key] = 0
+                        dict_a_modified[key] = dict_a[key]
                 
     if len(dict_a_modified.keys()) != len(dict_b_modified.keys()):
         print("ERROR")
@@ -375,6 +386,7 @@ def make_location_associations(user_file, start_day, days_to_consider, step, thr
             continue
         
         next_location, associations[day] = add_to_assiciation_dictionary(fingerprints, next_location, associations, day, start_day, threshold)
+    print(associations)
     return associations   
 
 def transform_transitions(transitions, association):

@@ -390,6 +390,13 @@ def random_entropy(user_filename, loc_over_time_list):
     print("Random entropy - "+user_filename+": "+str(rand_entropy))
     return rand_entropy
 
+#THIS FOR ESTIMATED WITH NON NULL
+def random_entropy_non_null(user_filename, loc_over_time_list):
+    loc_count = location_data_handler.get_locations_found(loc_over_time_list)
+    rand_entropy = log(loc_count-1,2)
+    print("Random entropy - "+user_filename+": "+str(rand_entropy))
+    return rand_entropy
+
 def temporal_uncorrelated_entropy(user_filename, loc_over_time_list, no_of_days, type):
     loc_count = location_data_handler.get_locations_found(loc_over_time_list)
     tu_entropy = 0
@@ -419,7 +426,12 @@ def temporal_uncorrelated_entropy(user_filename, loc_over_time_list, no_of_days,
         for i in range(0,loc_count):
             probability_indiv_over_days = get_probability_of_individual_apparition_over_days(i, loc_over_time_list, no_of_days)
             tu_entropy = tu_entropy - probability_indiv_over_days * log(probability_indiv_over_days,2)
-    
+    elif type == "app_bins_non_null":
+        for i in range(0,loc_count):
+            if i in loc_over_time_list: # only those locations which exist in the list
+                probability_over_bins = get_probability_of_apparition_over_bins_non_null(i, loc_over_time_list)
+                tu_entropy = tu_entropy - probability_over_bins * log(probability_over_bins,2)
+
     return tu_entropy
     
 # BEST OPTION
@@ -452,7 +464,24 @@ def get_probability_of_apparition_over_bins(loc, loc_over_time_list):
     #print(loc, probability)
     
     return probability
-
+# THIS FOR ESTIM
+def get_probability_of_apparition_over_bins_non_null(loc, loc_over_time_list):
+    probability = 0
+    for x in loc_over_time_list:
+        if loc == x:
+            probability = probability + 1
+    
+    #print(probability, len(loc_over_time_list))
+    non_null = 0
+    for x in loc_over_time_list:
+        if x!=0:
+            non_null = non_null + 1
+    
+    print("tu",probability, non_null, (probability+0.0)/non_null)
+    probability = (probability+0.0)/non_null
+    #print(loc, probability)
+    
+    return probability
 def get_probability_of_apparition_over_days(loc, loc_over_time_list, no_of_days):
     probability = 0
     prev = -1 

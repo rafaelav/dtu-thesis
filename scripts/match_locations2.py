@@ -1,4 +1,9 @@
 '''
+Created on Aug 22, 2014
+
+@author: rafa
+'''
+'''
 Created on May 18, 2014
 
 @author: rafa
@@ -13,7 +18,7 @@ from handlers import location_data_handler
 
 user_list = [6]#[4,6,7,11,12,14,17,19,20,24,25,27,32,34,35,36,37,38,39,40,41,44,45,46,48,49,50,52,53,55,57,58,59,60,62,70,72,74,75]
 start_day = 0
-days_to_consider = 30 # in total
+days_to_consider = 3 # in total
 n_best_signal_bssids = -1 
 m_most_popular_bssids = -1
 max_in_legend = 10
@@ -21,11 +26,8 @@ plot_interval = 60 # per ne day plot xticks are from 60 to 60 mins
 time_bin = 5
 iterations = 10 # number of times it runs hmm before trying to figure out best estimation
 step = 1 # number of days to consider in one interval
-min_loc = 2
-max_loc = 10
 threshold = 0.80
-"""
-file_name = "/star_day_0_step_1_days_30_combined_transitions.p"
+file_name = "/star_day_0_step_1_days_3_combined_transitions.p"
 base = "../../plots/"
 def get_marker_for_unknown(user):
     username = "user_"+str(user)+"_sorted"
@@ -63,7 +65,6 @@ def get_marker_for_unknown(user):
             
     print(unknown_marker)        
     return unknown_marker
-"""
 
 for user in user_list:
     user_file = "user_"+str(user)+"_sorted"
@@ -97,8 +98,7 @@ for user in user_list:
 
     print(combined_locations)
     print(max(combined_locations))
-    """
-    # TODELETE AFTER
+    
     marker_for_unknown = get_marker_for_unknown(user)
     print("unknown",marker_for_unknown)
 
@@ -117,14 +117,11 @@ for user in user_list:
     file_path = "../../plots/"+user_file+"/"+"testing_3_day_from_30_matched_locations_2.png"
     # plot transitions
     location_data_handler.plot_locations(combined_locations[0:288*3], 3, 5, user_file, colors_dict, start_time, end_time, 60*3, "k-means",file_path)
-    # END TO DELETE AFTER
-    """
     
     print("Start time: "+str(start_moment))
     print("End time creating transitions: "+str(datetime.datetime.now()))
     print("End time creating associations: "+str(datetime.datetime.now()))
     print("End time creating combinations: "+str(datetime.datetime.now()))
-    
     # plot
 #     user_data = user_data_handler.retrieve_data_from_user(user_file,start_day,days_to_consider)    
 #     start_time = user_data[0][1]

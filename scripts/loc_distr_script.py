@@ -1,3 +1,11 @@
+'''
+Created on Aug 1, 2014
+
+@author: rafa
+'''
+import sys
+sys.path.append( ".." )
+from handlers import location_data_handler
 import io
 import random
 import matplotlib.pyplot as plt
@@ -163,16 +171,18 @@ def plot_stop_locations(stops, data, start_time, end_time, colors_dict, plot_tim
 #         fig.savefig("../../plots/"+username+"/"+"kmeans_locations_("+str(locations_count)+")_"+str(days_to_consider)+"days_plot.png")
     
 start_day = 0
-days_to_consider = 1
+days_to_consider = 30
 plot_interval = 60 
 base = "../../plots/gps/"
-user_list = [1,6,72,93]
+user_list = [6,72]
 
 stops_for_users = []
 unique = []
+wifi_stops = []
+wifi_unique = []
 for user in user_list:
     username="user_"+str(user)+"_sorted"
-    file_path = base+username+"_locations_"+str(start_day)+"_"+str(days_to_consider)
+    #file_path = base+username+"_locations_"+str(start_day)+"_"+str(days_to_consider)
     data = retrieve_data_from_user(username, start_day, days_to_consider)
     start_time = data[0][1]
     end_time = start_time + days_to_consider * DAY_INTERVAL_SECS
@@ -183,6 +193,18 @@ for user in user_list:
     if len(stops) not in unique:
         unique.append(no_stops)
     print(len(stops))
+    
+    # wifi loc
+    total = 0
+    for i in range(0,30):
+        file_with_loc = "../../plots/"+username+"/day_"+str(i)+"_count_1_transitions.p"
+        locations = location_data_handler.load_pickled_file(file_with_loc)
+        no_wifi_stops = max(locations)
+        total = total + no_wifi_stops + 1
+    wifi_stops.append(total-1)
+    if total not in wifi_unique:
+        wifi_unique.append(no_wifi_stops)
+    
 
 fig = plt.figure()
 fig.clear()
@@ -191,10 +213,33 @@ fig.set_size_inches(15,5)
 plt.xlabel("Locations", fontsize=18)
 plt.ylabel("Users", fontsize=18)    
 
-plt.hist(stops_for_users, len(unique)+1, alpha=0.5)
+plt.hist(stops_for_users, len(unique), alpha=0.5)
 print(len(unique))
 fig.tight_layout()     
 fig.savefig("../../plots/random/distribution_loc_gps.png")
-    
+
+
+fig = plt.figure()
+fig.clear()
+fig.set_size_inches(15,5)  
+#plt.title("Gaussian Histogram")
+plt.xlabel("Locations", fontsize=18)
+plt.ylabel("Users", fontsize=18)    
+
+plt.hist(wifi_stops, len(wifi_unique), alpha=0.5)
+print(len(wifi_unique))
+fig.tight_layout()     
+fig.savefig("../../plots/random/distribution_loc_wifi.png")    
+
+suma = 0
+for x in stops_for_users:
+    suma = suma + x
+print(suma/(0.0+len(stops_for_users)))
+
+suma = 0
+for x in wifi_stops:
+    suma = suma + x
+print(suma/(0.0+len(wifi_stops)))
+
     #colors_dict = user_data_handler.generate_color_codes_for_gps_loc(stops)
     #plot_stop_locations(stops, data, start_time, end_time, colors_dict, plot_interval*days_to_consider, file_path)

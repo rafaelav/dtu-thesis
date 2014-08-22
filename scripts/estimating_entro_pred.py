@@ -7,14 +7,15 @@ import sys
 sys.path.append( ".." )
 from handlers import location_data_handler
 from handlers import measurements_handler
+from handlers import user_data_handler
 import pickle
 
-user_list = [4,6,7,11,12,14,17,19,20,24,25,27,32,34,35,36,37,38,39,40,41,44,45,46,48,49,50,52,53,55,57,58,59,60,62,70,72,74,75,80,82,83,91,92,99,100,102,103,105,108,110,111,113,114,116,117,118,119,120,123,124,125,126,129,130]
+user_list = [6]#[4,6,7,11,12,14,17,19,20,24,25,27,32,34,35,36,37,38,39,40,41,44,45,46,48,49,50,52,53,55,57,58,59,60,62,70,72,74,75,80,82,83,91,92,99,100,102,103,105,108,110,111,113,114,116,117,118,119,120,123,124,125,126,129,130]
 max_previous_conditional_entropy = -1
 max_previous_full_entropy = -1
 bins_per_day = 24*2
 base = "../../plots/"
-base_entro_pred = "entro_pred_full_after_match_mod/"
+base_entro_pred = "entro_pred_full_estimations/"
 file_full_entropies = base+base_entro_pred+"full_entropies.p"
 file_rand_entropies = base+base_entro_pred+"rand_entropies.p"
 file_tu_entropies = base+base_entro_pred+"tu_entropies.p"
@@ -30,6 +31,43 @@ dict_user_tu_entro = dict()
 dict_user_conditional_entros = dict()
 dict_user_predict = dict()
 
+def get_marker_for_unknown(user):
+    username = "user_"+str(user)+"_sorted"
+    unknown_marker = -1
+    markers = dict()
+    day = 1
+    pos = 288
+    #while unknown_marker == -1 and day <30:
+    
+    day_matrix_file="/day_"+str(day)+"_count_1_pickled_presence_matrix.p"
+    matrix = location_data_handler.load_pickled_file(base+username+day_matrix_file)
+    print(matrix)
+    matrix_keys = matrix.keys()
+    locations_file = base+username+file_name
+    transitions = location_data_handler.load_pickled_file(locations_file)
+    #print(transitions)
+    for i in range(0,288):
+        found = False
+        for key in matrix_keys:
+            if matrix[key][i]!=0:
+                found = True
+                break
+        if found == False: # found a position for which all APs are 0
+            if transitions[pos + i] in markers.keys():
+                print("pos marker",transitions[pos + i],pos+i)
+                markers[transitions[pos + i]] = markers[transitions[pos + i]] + 1
+            else:
+                print("pos marker",transitions[pos + i],pos+i) 
+                markers[transitions[pos + i]] = 1
+        
+    maxim = -1        
+    for key in markers.keys():
+        if markers[key] > maxim:
+            unknown_marker = key
+            
+    print(unknown_marker)        
+    return unknown_marker
+    
 def generate_measurements_and_save_results():
     for user in user_list:
         print("Start for user "+str(user))
@@ -38,34 +76,64 @@ def generate_measurements_and_save_results():
         
         loc_over_time_list = location_data_handler.load_pickled_file(locations_file)
         
-        if bins_per_day != 24 * 12:
+        # calculating percentage of locations which are unknown
+        marker_for_unknown = get_marker_for_unknown(user)
+        unknown_count = 0
+        for loc in loc_over_time_list:
+            if loc == marker_for_unknown:
+                unknown_count - unknown_count + 1
+        q = (unknown_count+0.0)/len(loc_over_time_list)
+        
+        print(loc_over_time_list)
+        print(marker_for_unknown)
+        print(user, q)
+        
+
+
+        user_data = user_data_handler.retrieve_data_from_user(username,0,2)    
+        start_time = user_data[0][1]
+        DAY_INTERVAL_SECS = 24 * 60 * 60
+        end_time = end_time = start_time + 2 * DAY_INTERVAL_SECS
+        # get colors for the locations (0 to estimated_hidden_states)
+        locations = []
+        for i in range(0,max(loc_over_time_list)+1):
+            locations.append(i)
+        colors_dict = user_data_handler.generate_color_codes_for_bssid(locations)
+        colors_dict[marker_for_unknown] = '#FFFFFF'
+        # file path where to plot
+        file_path = "../../plots/"+username+"/"+"testing_2_day_from_30_matched_locations.png"
+        # plot transitions
+        location_data_handler.plot_locations(loc_over_time_list[0:288*2], 2, 5, username, colors_dict, start_time, end_time, 60*2, "k-means",file_path)
+        
+"""        if bins_per_day != 24 * 12:
             loc_over_time_list = measurements_handler.convert_to_combined_bins(loc_over_time_list, bins_per_day)
         
         # calculating random entropy ( it is calculate with locations for 5 min bins only)
-        rand_entropy = measurements_handler.random_entropy(username, loc_over_time_list)
+        rand_entropy = measurements_handler.random_entropy_non_null(username, loc_over_time_list)
         
         # calculating temp uncorrel entropy
         print("TU entropy")
+        tu_entro_type = "app_bins_non_null"
         tu_entropy = measurements_handler.temporal_uncorrelated_entropy(username, loc_over_time_list, no_of_days, tu_entro_type)
-        
+                
         # calculating full entropy 
-    #    if max_previous_full_entropy != -1:
-    #        full_entropy = measurements_handler.actual_entropy_with_combined_bins(username, loc_over_time_list, max_previous_full_entropy)
-    #    else:
-    #        full_entropy = measurements_handler.actual_entropy_with_combined_bins(username, loc_over_time_list)
+        if max_previous_full_entropy != -1:
+            full_entropy = measurements_handler.actual_entropy_with_combined_bins(username, loc_over_time_list, max_previous_full_entropy)
+        else:
+            full_entropy = measurements_handler.actual_entropy_with_combined_bins(username, loc_over_time_list)
             
         # calculating conditional entropy
-        print("Cond entro")
-        if max_previous_conditional_entropy!=-1:
-            entropies, minimum_cond_entropy, no_of_known_states, sum_of_all_possibilities, media = measurements_handler.conditional_entropy_version2(username, loc_over_time_list, max_previous_conditional_entropy)
-        else:
-            entropies, minimum_cond_entropy, no_of_known_states, sum_of_all_possibilities, media = measurements_handler.conditional_entropy_version2(username, loc_over_time_list)        
+#         print("Cond entro")
+#         if max_previous_conditional_entropy!=-1:
+#             entropies, minimum_cond_entropy, no_of_known_states, sum_of_all_possibilities, media = measurements_handler.conditional_entropy_version2(username, loc_over_time_list, max_previous_conditional_entropy)
+#         else:
+#             entropies, minimum_cond_entropy, no_of_known_states, sum_of_all_possibilities, media = measurements_handler.conditional_entropy_version2(username, loc_over_time_list)        
         
         # save all entries for user
         dict_user_rand_entro[user] = rand_entropy
         dict_user_tu_entro[user] = tu_entropy
-        dict_user_full_entro[user] = media
-        dict_user_conditional_entros[user] = entropies
+        dict_user_full_entro[user] = full_entropy
+        #dict_user_conditional_entros[user] = entropies
         
         # calculating predictability - again..only with all locations in 30 days
         no_locations = location_data_handler.get_locations_found(loc_over_time_list)
@@ -84,7 +152,7 @@ def generate_measurements_and_save_results():
         pickle.dump(dict_user_rand_entro, open(file_rand_entropies, "wb"))
         pickle.dump(dict_user_conditional_entros, open(file_cond_entropies, "wb"))
         pickle.dump(dict_user_predict, open(file_pred, "wb"))
-
+"""
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import UnivariateSpline
@@ -322,10 +390,10 @@ def generate_pred_distribution(file_in_which_to_save):
     
     
 generate_measurements_and_save_results()
-generate_entro_distribution(base+base_entro_pred+"full_entro_distrib.png")
-generate_rand_entro_distribution(base+base_entro_pred+"rand_entro_distrib.png")
-generate_tu_entro_distribution(base+base_entro_pred+"tu_entro_distrib.png")
-gen_overlay_histo(base+base_entro_pred+"overlay.png")
-generate_averages()
-generate_conditioned_entro_graphic(base+base_entro_pred+"constr.png")
-generate_pred_distribution(base+base_entro_pred+"pred_hist.png")
+#generate_entro_distribution(base+base_entro_pred+"full_entro_distrib.png")
+#generate_rand_entro_distribution(base+base_entro_pred+"rand_entro_distrib.png")
+#generate_tu_entro_distribution(base+base_entro_pred+"tu_entro_distrib.png")
+#gen_overlay_histo(base+base_entro_pred+"overlay.png")
+#generate_averages()
+#generate_conditioned_entro_graphic(base+base_entro_pred+"constr.png")
+#generate_pred_distribution(base+base_entro_pred+"pred_hist.png")
