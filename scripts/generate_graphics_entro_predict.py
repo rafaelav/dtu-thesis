@@ -9,12 +9,13 @@ from handlers import location_data_handler
 from handlers import measurements_handler
 import pickle
 
-user_list = [4,6,7,11,12,14,17,19,20,24,25,27,32,34,35,36,37,38,39,40,41,44,45,46,48,49,50,52,53,55,57,58,59,60,62,70,72,74,75,80,82,83,91,92,99,100,102,103,105,108,110,111,113,114,116,117,118,119,120,123,124,125,126,129,130]
+#user_list = [4,6,7,11,12,14,17,19,20,24,25,27,32,34,35,36,37,38,39,40,41,44,45,46,48,49,50,52,53,55,57,58,59,60,62,70,72,74,75,80,82,83,91,92,99,100,102,103,105,108,110,111,113,114,116,117,118,119,120,123,124,125,126,129,130]
+user_list = [4,25,34,48,49,59,118,125]
 max_previous_conditional_entropy = -1
 max_previous_full_entropy = -1
 bins_per_day = 24*2
 base = "../../plots/"
-base_entro_pred = "entro_pred_full_after_match_mod/"
+base_entro_pred = "entro_pred_selected_estimations/"#"entro_pred_full_estimations/"#"entro_pred_full_after_match_mod/"
 file_full_entropies = base+base_entro_pred+"full_entropies.p"
 file_rand_entropies = base+base_entro_pred+"rand_entropies.p"
 file_tu_entropies = base+base_entro_pred+"tu_entropies.p"
@@ -49,10 +50,10 @@ def generate_measurements_and_save_results():
         tu_entropy = measurements_handler.temporal_uncorrelated_entropy(username, loc_over_time_list, no_of_days, tu_entro_type)
         
         # calculating full entropy 
-    #    if max_previous_full_entropy != -1:
-    #        full_entropy = measurements_handler.actual_entropy_with_combined_bins(username, loc_over_time_list, max_previous_full_entropy)
-    #    else:
-    #        full_entropy = measurements_handler.actual_entropy_with_combined_bins(username, loc_over_time_list)
+        if max_previous_full_entropy != -1:
+            full_entropy = measurements_handler.actual_entropy_with_combined_bins(username, loc_over_time_list, max_previous_full_entropy)
+        else:
+            full_entropy = measurements_handler.actual_entropy_with_combined_bins(username, loc_over_time_list)
             
         # calculating conditional entropy
         print("Cond entro")
